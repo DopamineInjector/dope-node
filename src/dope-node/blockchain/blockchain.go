@@ -1,6 +1,9 @@
 package blockchain
 
-import "fmt"
+import (
+	"fmt"
+	"log"
+)
 
 var blockchain = []Block{}
 
@@ -9,8 +12,10 @@ func AddBlock(content string) {
 
 	if len(blockchain) == 0 {
 		newBlock = createGenesisBlock(content)
+		log.Println("Created genesis block: " + newBlock.ToString())
 	} else {
 		newBlock = createBlock(blockchain[len(blockchain)-1], content)
+		log.Println("Created new block: " + newBlock.ToString())
 	}
 
 	blockchain = append(blockchain, newBlock)

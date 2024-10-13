@@ -3,22 +3,28 @@ package blockchain
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"strconv"
 	"time"
 )
 
 type Block struct {
 	Index        int
-	Timestamp    string
+	Timestamp    int64
 	Content      string
 	PreviousHash string
 	Hash         string
 }
 
+func (block *Block) ToString() string {
+	dateOfCreation := time.Unix(block.Timestamp, 0)
+	return fmt.Sprintf("Block: {index: %d, created: %s, hash: %s}", block.Index, dateOfCreation, block.Hash)
+}
+
 func createBlock(previousBlock Block, content string) Block {
 	newBlock := Block{
 		Index:        previousBlock.Index + 1,
-		Timestamp:    strconv.FormatInt(time.Now().Unix(), 10),
+		Timestamp:    time.Now().Unix(),
 		Content:      content,
 		PreviousHash: previousBlock.Hash,
 		Hash:         "",
@@ -30,7 +36,7 @@ func createBlock(previousBlock Block, content string) Block {
 func createGenesisBlock(content string) Block {
 	genesis := Block{
 		Index:        0,
-		Timestamp:    strconv.FormatInt(time.Now().Unix(), 10),
+		Timestamp:    time.Now().Unix(),
 		Content:      content,
 		PreviousHash: "0",
 		Hash:         "",
@@ -40,7 +46,7 @@ func createGenesisBlock(content string) Block {
 }
 
 func calculateHash(block Block) string {
-	dataToHash := strconv.Itoa(block.Index) + block.Timestamp + block.Content + block.PreviousHash
+	dataToHash := strconv.Itoa(block.Index) + strconv.FormatInt(block.Timestamp, 10) + block.Content + block.PreviousHash
 	hash := sha256.New()
 	hash.Write([]byte(dataToHash))
 	hashValue := hash.Sum(nil)
