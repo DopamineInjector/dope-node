@@ -1,14 +1,14 @@
 package main
 
 import (
-	"dope-node/blockchain"
+	"dope-node/communication"
+	"flag"
+	"fmt"
 )
 
 func main() {
-	blockchain.AddBlock("content")
-	blockchain.AddBlock("content2")
-	blockchain.AddBlock("content3")
-	blockchain.AddBlock("content4")
+	bootstrapServer := flag.String("bootstrap", "127.0.0.1", "An IP address to the bootstrap server")
+	fmt.Println(bootstrapServer)
 
-	blockchain.PrintBlockchain()
+	communication.RunWebsocketListener()
 }
