@@ -7,8 +7,12 @@ import (
 )
 
 func main() {
-	bootstrapServer := flag.String("bootstrap", "127.0.0.1", "An IP address to the bootstrap server")
-	fmt.Println(bootstrapServer)
+	isBoostrapServer := flag.Bool("bootstrap", false, "Is this node running as a bootstrap")
+	bootstrapServerAddress := flag.String("bootstrap_address", "127.0.0.1:7312", "An IP address to the bootstrap server")
 
-	communication.RunWebsocketListener()
+	flag.Parse()
+	fmt.Println(*isBoostrapServer)
+	fmt.Println(*bootstrapServerAddress)
+
+	communication.RegisterEndpoints(*bootstrapServerAddress, *isBoostrapServer)
 }
