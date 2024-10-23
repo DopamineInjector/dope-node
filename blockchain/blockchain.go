@@ -22,7 +22,7 @@ func (blockchain *Blockchain) AddBlock(content string) {
 	*blockchain = append(*blockchain, newBlock)
 }
 
-func (blockchain *Blockchain) PrintBlockchain() {
+func (blockchain *Blockchain) ToString() {
 	for i := 0; i < len(*blockchain); i++ {
 		fmt.Println((*blockchain)[i])
 	}
