@@ -21,15 +21,23 @@ func (block *Block) ToString() string {
 	return fmt.Sprintf("Block: {index: %d, created: %s, hash: %s}", block.Index, dateOfCreation, block.Hash)
 }
 
-func createBlock(previousBlock Block, content string) Block {
+func (block *Block) calculateHash() string {
+	dataToHash := strconv.Itoa(block.Index) + strconv.FormatInt(block.Timestamp, 10) + block.Content + block.PreviousHash
+	hash := sha256.New()
+	hash.Write([]byte(dataToHash))
+	hashValue := hash.Sum(nil)
+
+	return hex.EncodeToString(hashValue)
+}
+
+func createBlock(previousBlock *Block, content string) Block {
 	newBlock := Block{
 		Index:        previousBlock.Index + 1,
 		Timestamp:    time.Now().Unix(),
 		Content:      content,
 		PreviousHash: previousBlock.Hash,
-		Hash:         "",
 	}
-	newBlock.Hash = calculateHash(newBlock)
+	newBlock.Hash = newBlock.calculateHash()
 	return newBlock
 }
 
@@ -39,17 +47,7 @@ func createGenesisBlock(content string) Block {
 		Timestamp:    time.Now().Unix(),
 		Content:      content,
 		PreviousHash: "0",
-		Hash:         "",
 	}
-	genesis.Hash = calculateHash(genesis)
+	genesis.Hash = genesis.calculateHash()
 	return genesis
-}
-
-func calculateHash(block Block) string {
-	dataToHash := strconv.Itoa(block.Index) + strconv.FormatInt(block.Timestamp, 10) + block.Content + block.PreviousHash
-	hash := sha256.New()
-	hash.Write([]byte(dataToHash))
-	hashValue := hash.Sum(nil)
-
-	return hex.EncodeToString(hashValue)
 }
