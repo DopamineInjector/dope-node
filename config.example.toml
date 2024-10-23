@@ -1,0 +1,9 @@
+[server]
+# Http port for the node to start listening on
+port = 80
+
+[bootstrap]
+# Indicates whether this node should broadcast IP addresses to other nodes
+bootstrap = true
+# Address of a bootstrap server to get other node IP addresses from
+bootstrap-address = "127.0.0.1:80"
