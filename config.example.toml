@@ -7,3 +7,7 @@ port = 80
 bootstrap = true
 # Address of a bootstrap server to get other node IP addresses from
 bootstrap-address = "127.0.0.1:80"
+
+[db]
+# Adress of dope db instance used for node storage
+address = "http://localhost:42069"
