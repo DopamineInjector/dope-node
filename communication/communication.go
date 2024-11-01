@@ -14,7 +14,8 @@ import (
 var knownNodeAddresses = make([]string, 0)
 
 const (
-	NODE_ENDPOINT = "/node"
+	NODE_ENDPOINT      = "/node"
+	BOOTSTRAP_ENDPOINT = "/bootstrap"
 )
 
 func ConnectToNetwork(bootstrapAddr *string, ip *string, port *int) {
@@ -60,7 +61,7 @@ func fetchNodeAddressesFromBootstrap(bootstrapAddress string, ip string, port in
 }
 
 func sendWsMessage(targetAddress string, message []byte) error {
-	u := url.URL{Scheme: "ws", Host: targetAddress, Path: "/bootstrap"}
+	u := url.URL{Scheme: "ws", Host: targetAddress, Path: BOOTSTRAP_ENDPOINT}
 	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 	if err != nil {
 		return err
