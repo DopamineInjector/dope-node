@@ -1,13 +1,10 @@
 package communication
 
-type Message struct {
-	Content string `json:"content"`
+type NewConnectionMessage struct {
+	Ip   string `json:"ip"`
+	Port int    `json:"port"`
 }
 
-type FetchBootstrapAddressesResponse struct {
-	Addresses []string
-}
-
-type ConnectRequest struct {
-	sender string
+type AvailableNodesAddresses struct {
+	Addresses []string `json:"addresses"`
 }
