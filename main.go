@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	log "github.com/sirupsen/logrus"
+	db "github.com/DopamineInjector/go-dope-db"
 )
 
 func main() {
@@ -26,5 +27,13 @@ func main() {
 	}
 	log.Info("Parsed node configuration")
 
+	log.Info("Connecting to node storage")
+	dbUrl := config.GetString(config.DbUrlKey);
+	checksum, err := db.GetChecksum(dbUrl);
+	if err != nil {
+		log.Fatalf("Could not connect to db instance, exiting\n%s", err.Error());
+	}
+	log.Infof("Connected to storage, current state checksum: %s", checksum.Checksum);
+  
 	communication.ConnectToNetwork(bootstrapServerAddress, &nodeAddress, port)
 }

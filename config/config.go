@@ -10,12 +10,14 @@ const (
 	ServerPortKey ConfigKey = "server.port"
 	IsBootstrapKey = "bootstrap.bootstrap"
 	BootstrapServerAddressKey = "bootstrap.bootstrap-address"
+	DbUrlKey = "db.address"
 )
 
 func setupDefaults() {
 	setupDefaultWithKey(ServerPortKey, 80);
 	setupDefaultWithKey(IsBootstrapKey, false);
 	setupDefaultWithKey(BootstrapServerAddressKey, "127.0.0.1:80");
+	setupDefaultWithKey(DbUrlKey, "http://localhost:42069");
 }
 
 func setupDefaultWithKey(key ConfigKey, value any) {
