@@ -1,45 +1,63 @@
 package blockchain
 
 import (
-	"dope-node/communication/messages"
 	"fmt"
 	"strconv"
 
 	db "github.com/DopamineInjector/go-dope-db"
 )
 
-func Transact(transaction messages.Transaction) (*messages.Transaction, error) {
-	senderBalance, err := getUserBalance(dbUrl, transaction.Sender)
-	if err != nil {
-		return nil, err
+type Transaction struct {
+	Sender   string
+	Receiver string
+	Amount   float64
+}
+
+type Transactions []Transaction
+
+var DopeTransactions = Transactions{}
+
+func InitalizeTransactions(transactions *Transactions) {
+	DopeTransactions = *transactions
+}
+
+func Transact(transaction *Transaction, dbUrl *string) error {
+	if dbUrl == nil || *dbUrl == "" {
+		return fmt.Errorf("database URL not set")
 	}
 
-	receiverBalance, err := getUserBalance(dbUrl, transaction.Receiver)
+	senderBalance, err := getUserBalance(dbUrl, &transaction.Sender)
 	if err != nil {
-		return nil, err
+		return err
+	}
+
+	receiverBalance, err := getUserBalance(dbUrl, &transaction.Receiver)
+	if err != nil {
+		return err
 	}
 
 	newReceiverBalance := receiverBalance + transaction.Amount
 	newSenderBalance := senderBalance - transaction.Amount
 	if newSenderBalance < 0 {
-		return nil, fmt.Errorf("not enouth $")
+		return fmt.Errorf("not enouth $")
 	}
 
-	_, err = db.InsertValue(dbUrl, prepareInsertValueRequest(transaction.Sender, newSenderBalance))
+	_, err = db.InsertValue(*dbUrl, prepareInsertValueRequest(&transaction.Sender, &newSenderBalance))
 	if err != nil {
-		return nil, err
+		return err
 	}
-	_, err = db.InsertValue(dbUrl, prepareInsertValueRequest(transaction.Receiver, newReceiverBalance))
+	_, err = db.InsertValue(*dbUrl, prepareInsertValueRequest(&transaction.Receiver, &newReceiverBalance))
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	//addLeafToMPT(&transaction)
-	return &transaction, nil
+	DopeTransactions = append(DopeTransactions, *transaction)
+
+	return nil
 }
 
-func getUserBalance(dbUrl string, user string) (float64, error) {
-	balance, err := db.GetValue(dbUrl, db.SelectValueRequest{Key: user, Namespace: "transaction"})
+func getUserBalance(dbUrl *string, user *string) (float64, error) {
+	balance, err := db.GetValue(*dbUrl, db.SelectValueRequest{Key: *user, Namespace: "transaction"})
 	if err != nil {
 		return 0.0, err
 	}
@@ -52,6 +70,6 @@ func getUserBalance(dbUrl string, user string) (float64, error) {
 	return balanceParsed, nil
 }
 
-func prepareInsertValueRequest(key string, value float64) db.InsertValueRequest {
-	return db.InsertValueRequest{Key: key, Value: strconv.FormatFloat(value, 'f', 2, 64), Namespace: "transaction"}
+func prepareInsertValueRequest(key *string, value *float64) db.InsertValueRequest {
+	return db.InsertValueRequest{Key: *key, Value: strconv.FormatFloat(*value, 'f', 2, 64), Namespace: "transaction"}
 }

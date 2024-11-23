@@ -2,7 +2,6 @@ package blockchain
 
 import (
 	"crypto/sha256"
-	"dope-node/communication/messages"
 	"encoding/hex"
 	"fmt"
 	"strconv"
@@ -15,7 +14,7 @@ type Block struct {
 	Content      string
 	PreviousHash string
 	Hash         string
-	Transactions []messages.Transaction
+	Transactions []Transaction
 	MPTHash      string
 	dbChecksum   string
 }
@@ -34,24 +33,32 @@ func (block *Block) calculateHash() string {
 	return hex.EncodeToString(hashValue)
 }
 
-func createBlock(previousBlock *Block, content string) Block {
+func createBlock(previousBlock *Block, content *string) *Block {
 	newBlock := Block{
 		Index:        previousBlock.Index + 1,
 		Timestamp:    time.Now().Unix(),
-		Content:      content,
+		Content:      *content,
 		PreviousHash: previousBlock.Hash,
+		Transactions: DopeTransactions,
+		MPTHash:      "hash",
+		dbChecksum:   "checksum",
 	}
 	newBlock.Hash = newBlock.calculateHash()
-	return newBlock
+
+	return &newBlock
 }
 
-func createGenesisBlock(content string) Block {
+func createGenesisBlock(content *string) *Block {
 	genesis := Block{
 		Index:        0,
 		Timestamp:    time.Now().Unix(),
-		Content:      content,
+		Content:      *content,
 		PreviousHash: "0",
+		Transactions: DopeTransactions,
+		MPTHash:      "hash",
+		dbChecksum:   "checksum",
 	}
 	genesis.Hash = genesis.calculateHash()
-	return genesis
+
+	return &genesis
 }

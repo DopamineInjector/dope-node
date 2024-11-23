@@ -1,7 +1,6 @@
 package main
 
 import (
-	"dope-node/blockchain"
 	"dope-node/communication"
 	"dope-node/config"
 	"flag"
@@ -36,7 +35,8 @@ func main() {
 	}
 	log.Infof("Connected to storage, current state checksum: %s", checksum.Checksum)
 
-	blockchain.InitializeBlockchain(dbUrl)
-
-	communication.ConnectToNetwork(bootstrapServerAddress, &nodeAddress, port)
+	err = communication.ConnectToNetwork(bootstrapServerAddress, &nodeAddress, port, dbUrl)
+	if err != nil {
+		log.Errorf("Failed to connect to node network. Reason: %s", err)
+	}
 }

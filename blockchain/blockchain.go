@@ -7,31 +7,29 @@ import (
 
 type Blockchain []Block
 
-var dbUrl string
+var DopeChain Blockchain
 
-func InitializeBlockchain(url string) {
-	// TODO: read blockchain, transactions from other nodes
-	dbUrl = url
-
+func InitializeBlockchain(chain *Blockchain) {
+	DopeChain = *chain
 }
 
-func (blockchain *Blockchain) AddBlock(content string) {
-	var newBlock Block
+func (bchain *Blockchain) CreateBlock(content *string) {
+	var newBlock *Block
 
-	if len(*blockchain) == 0 {
+	if len(*bchain) == 0 {
 		newBlock = createGenesisBlock(content)
 		log.Println("Created genesis block: " + newBlock.ToString())
 	} else {
-		prevBlock := (*blockchain)[len(*blockchain)-1]
+		prevBlock := (*bchain)[len(*bchain)-1]
 		newBlock = createBlock(&prevBlock, content)
 		log.Println("Created new block: " + newBlock.ToString())
 	}
 
-	*blockchain = append(*blockchain, newBlock)
+	*bchain = append(*bchain, *newBlock)
 }
 
-func (blockchain *Blockchain) ToString() {
-	for i := 0; i < len(*blockchain); i++ {
-		fmt.Println((*blockchain)[i])
+func (bchain *Blockchain) ToString() {
+	for i := 0; i < len(*bchain); i++ {
+		fmt.Println((*bchain)[i])
 	}
 }
