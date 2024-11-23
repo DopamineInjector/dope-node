@@ -1,6 +1,8 @@
 package communication
 
 import (
+	"dope-node/blockchain"
+	"dope-node/communication/messages"
 	"encoding/json"
 	"net/http"
 
@@ -19,11 +21,37 @@ func nodeHandler(w http.ResponseWriter, r *http.Request) {
 		log.Warnf("Failed to read message. Reason: %s", err)
 	}
 
-	var receivedMessage AvailableNodesAddresses
-	err = json.Unmarshal(mess, &receivedMessage)
+	var messType messages.MessageType
+	err = json.Unmarshal(mess, &messType)
 	if err != nil {
 		log.Warnf("Failed to deserialize message. Reason: %s", err)
 	}
 
-	knownNodeAddresses = receivedMessage.Addresses
+	switch messType.Type {
+	case "addresses":
+		{
+			log.Info("received addresses message")
+			var receivedMessage messages.AvailableNodesAddresses
+			err = json.Unmarshal(mess, &receivedMessage)
+			if err != nil {
+				log.Warnf("Failed to deserialize message. Reason: %s", err)
+			}
+			knownNodeAddresses = receivedMessage.Addresses
+		}
+	case "transaction":
+		{
+			log.Info("received transaction message")
+			var receivedMessage messages.Transaction
+			err = json.Unmarshal(mess, &receivedMessage)
+			if err != nil {
+				log.Warnf("Failed to deserialize message. Reason: %s", err)
+			}
+			_, err = blockchain.Transact(receivedMessage)
+			if err == nil {
+				log.Info("Unsuccessful transaction")
+			} else {
+				log.Info("Transaction successfull")
+			}
+		}
+	}
 }

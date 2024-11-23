@@ -7,6 +7,8 @@ import (
 	"net/url"
 	"time"
 
+	"dope-node/communication/messages"
+
 	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
 )
@@ -33,20 +35,19 @@ func ConnectToNetwork(bootstrapAddr *string, ip *string, port *int) {
 		if err != nil {
 			log.Warnf("Failed to fetch node addresses. Reason: %s", err)
 		}
+
+		log.Infof("fetched bootstrap addresses: %s", knownNodeAddresses)
 		knownNodeAddresses = deleteAddress(fmt.Sprintf("%s:%d", *ip, *port))
-		log.Infof("Received bootstrap addresses: ")
-		for _, addr := range knownNodeAddresses {
-			log.Infof("		- %s", addr)
-		}
+		log.Infof("Cleaned bootstrap addresses: %s", knownNodeAddresses)
 
 		// Update addresses every minute
-		time.Sleep(10 * time.Second)
+		time.Sleep(1 * time.Minute)
 	}
 
 }
 
 func fetchNodeAddressesFromBootstrap(bootstrapAddress string, ip string, port int) error {
-	connectMessage := NewConnectionMessage{Ip: ip, Port: port}
+	connectMessage := messages.NewConnectionMessage{Ip: ip, Port: port}
 	serializedMess, err := json.Marshal((connectMessage))
 	if err != nil {
 		return err

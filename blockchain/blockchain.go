@@ -7,6 +7,14 @@ import (
 
 type Blockchain []Block
 
+var dbUrl string
+
+func InitializeBlockchain(url string) {
+	// TODO: read blockchain, transactions from other nodes
+	dbUrl = url
+
+}
+
 func (blockchain *Blockchain) AddBlock(content string) {
 	var newBlock Block
 

@@ -2,6 +2,7 @@ package blockchain
 
 import (
 	"crypto/sha256"
+	"dope-node/communication/messages"
 	"encoding/hex"
 	"fmt"
 	"strconv"
@@ -14,6 +15,9 @@ type Block struct {
 	Content      string
 	PreviousHash string
 	Hash         string
+	Transactions []messages.Transaction
+	MPTHash      string
+	dbChecksum   string
 }
 
 func (block *Block) ToString() string {
@@ -22,7 +26,7 @@ func (block *Block) ToString() string {
 }
 
 func (block *Block) calculateHash() string {
-	dataToHash := strconv.Itoa(block.Index) + strconv.FormatInt(block.Timestamp, 10) + block.Content + block.PreviousHash
+	dataToHash := strconv.Itoa(block.Index) + strconv.FormatInt(block.Timestamp, 10) + block.Content + block.PreviousHash + block.MPTHash + block.dbChecksum
 	hash := sha256.New()
 	hash.Write([]byte(dataToHash))
 	hashValue := hash.Sum(nil)
