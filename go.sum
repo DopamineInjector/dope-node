@@ -1,6 +1,5 @@
 github.com/DopamineInjector/go-dope-db v1.0.2 h1:aIsPbvulI++2nejOeK5++rGi2CGhsLO4vteABCuDv9I=
 github.com/DopamineInjector/go-dope-db v1.0.2/go.mod h1:vHnJ9hEDeo+zv+BsMQ1fkaOcCW5liSGW8PsBBvpnnSo=
-github.com/cbergoon/merkletree v0.2.0 h1:Bttqr3OuoiZEo4ed1L7fTasHka9II+BF9fhBfbNEEoQ=
 github.com/cbergoon/merkletree v0.2.0/go.mod h1:5c15eckUgiucMGDOCanvalj/yJnD+KAZj1qyJtRW5aM=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
