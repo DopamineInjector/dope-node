@@ -1,10 +1,13 @@
 package communication
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
+	"strconv"
 
 	"dope-node/blockchain"
 	"dope-node/communication/messages"
@@ -15,6 +18,7 @@ import (
 
 var knownNodeAddresses = make([]string, 0)
 var dbUrl string
+var fullNodeAddress string
 
 const (
 	NODE_ENDPOINT          = "/node"
@@ -24,32 +28,93 @@ const (
 
 func ConnectToNetwork(bootstrapAddr *string, ip *string, port *int, url string) error {
 	dbUrl = url
+	serverReady := make(chan bool)
+	fullNodeAddress = fmt.Sprintf("%s:%d", *ip, *port)
+
 	go func() {
 		nodeAddress := fmt.Sprintf("%s:%d", *ip, *port)
 		http.HandleFunc(NODE_ENDPOINT, nodeHandler)
+		log.Infof("Server running on %s", nodeAddress)
+
+		serverReady <- true
 		err := http.ListenAndServe(nodeAddress, nil)
 		if err != nil {
 			log.Errorf("failed to run server on %s. Reason: %s", nodeAddress, err)
 		}
 	}()
 
+	<-serverReady
 	err := fetchNodeAddresses(bootstrapAddr, ip, port)
 	if err != nil {
 		return fmt.Errorf("failed to fetch node addresses. Reason: %s", err)
 	}
 
-	err = initializeBlockchain()
+	err = syncBlockchain()
 	if err != nil {
 		return fmt.Errorf("failed to fetch blockchain structure. Reason: %s", err)
 	}
 
-	return nil
+	select {}
 }
 
-func initializeBlockchain() error {
+// For running functions from currently running node
+func StartConsoleListener() {
+	scanner := bufio.NewScanner(os.Stdin)
+	log.Info("Console listener has started")
+
+	for scanner.Scan() {
+		input := scanner.Text()
+		switch input {
+		case "exit":
+			os.Exit(0)
+		case "transaction":
+			fmt.Println("Enter amount: ")
+			amount := scanner.Text()
+			fmt.Println("Enter receiver: ")
+			receiver := scanner.Text()
+			beginTransaction(amount, receiver)
+		case "block":
+			fmt.Println("Block content: ")
+			content := scanner.Text()
+			digBlock(content)
+		default:
+			log.Infof("Unknown command: %s\n", input)
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		log.Warnf("Error reading console input: %v", err)
+	}
+}
+
+func digBlock(content string) {
+	blockchain.DopeChain.InsertToBlockchain(&content)
+	blockchain.DopeTransactions = blockchain.DopeTransactions[:0]
+}
+
+func beginTransaction(amount string, receiver string) {
+	// TODO: change sender value
+	sender := fullNodeAddress
+	parsedAmount, err := strconv.ParseFloat(amount, 64)
+	if err != nil {
+		log.Warnf("cannot parse amount value. Reason: %s", err)
+		return
+	}
+
+	transToSend := blockchain.Transaction{Amount: parsedAmount, Receiver: receiver, Sender: sender}
+	err = blockchain.DopeTransactions.InsertTransaction(&transToSend, &dbUrl)
+	if err != nil {
+		log.Warnf("cannot make transaction. Reason: %s", err)
+		return
+	}
+
+	log.Infof("transaction from %s to %s inserted successfully", fullNodeAddress, sender)
+}
+
+func syncBlockchain() error {
 	if len(knownNodeAddresses) == 0 {
 		log.Info("No other nodes. Creating blockchain")
-		blockchain.InitializeBlockchain(&blockchain.Blockchain{})
+		blockchain.SyncBlockchain(&blockchain.Blockchain{})
 		return nil
 	}
 
@@ -74,11 +139,13 @@ func fetchNodeAddresses(bootstrapAddr *string, ip *string, port *int) error {
 		return err
 	}
 
-	ownAddress := fmt.Sprintf("%s:%d", *ip, *port)
-	knownNodeAddresses = deleteAddress(&ownAddress)
-	log.Infof("Bootstrap addresses: %s", knownNodeAddresses)
-
 	return nil
+}
+
+func initializeNodeAddresses(addresses []string) {
+	knownNodeAddresses = addresses
+	knownNodeAddresses = deleteAddress(&fullNodeAddress)
+	log.Infof("Bootstrap addresses: %s", knownNodeAddresses)
 }
 
 func fetchNodeAddressesFromBootstrap(bootstrapAddress *string, ip *string, port *int) error {

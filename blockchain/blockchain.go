@@ -9,11 +9,11 @@ type Blockchain []Block
 
 var DopeChain Blockchain
 
-func InitializeBlockchain(chain *Blockchain) {
+func SyncBlockchain(chain *Blockchain) {
 	DopeChain = *chain
 }
 
-func (bchain *Blockchain) CreateBlock(content *string) {
+func (bchain *Blockchain) InsertToBlockchain(content *string) {
 	var newBlock *Block
 
 	if len(*bchain) == 0 {

@@ -35,6 +35,7 @@ func main() {
 	}
 	log.Infof("Connected to storage, current state checksum: %s", checksum.Checksum)
 
+	go communication.StartConsoleListener()
 	err = communication.ConnectToNetwork(bootstrapServerAddress, &nodeAddress, port, dbUrl)
 	if err != nil {
 		log.Errorf("Failed to connect to node network. Reason: %s", err)

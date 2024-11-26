@@ -17,11 +17,11 @@ type Transactions []Transaction
 
 var DopeTransactions = Transactions{}
 
-func InitalizeTransactions(transactions *Transactions) {
+func SyncTransactions(transactions *Transactions) {
 	DopeTransactions = *transactions
 }
 
-func Transact(transaction *Transaction, dbUrl *string) error {
+func (dTransactions *Transactions) InsertTransaction(transaction *Transaction, dbUrl *string) error {
 	if dbUrl == nil || *dbUrl == "" {
 		return fmt.Errorf("database URL not set")
 	}
@@ -51,7 +51,7 @@ func Transact(transaction *Transaction, dbUrl *string) error {
 		return err
 	}
 
-	DopeTransactions = append(DopeTransactions, *transaction)
+	*dTransactions = append(*dTransactions, *transaction)
 
 	return nil
 }
@@ -72,4 +72,8 @@ func getUserBalance(dbUrl *string, user *string) (float64, error) {
 
 func prepareInsertValueRequest(key *string, value *float64) db.InsertValueRequest {
 	return db.InsertValueRequest{Key: *key, Value: strconv.FormatFloat(*value, 'f', 2, 64), Namespace: "transaction"}
+}
+
+func removeAppliedTransactions() {
+
 }

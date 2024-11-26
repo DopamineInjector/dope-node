@@ -12,8 +12,9 @@ import (
 const (
 	ADDRESSES_MESSAGE_TYPE      = "addresses"
 	TRANSACTION_MESSAGE_TYPE    = "transaction"
-	STRUCTURE_INIT_MESSAGE_TYPE = "structure"
+	SYNC_STRUCTURE_MESSAGE_TYPE = "structure"
 	BLOCK_MESSAGE_TYPE          = "block"
+	INVOKE_MESSAGE_TYPE         = "invoke"
 )
 
 func nodeHandler(w http.ResponseWriter, r *http.Request) {
@@ -50,7 +51,7 @@ func handleMessageType(messType string, mess []byte) {
 				log.Warnf("Failed to deserialize message. Reason: %s", err)
 				break
 			}
-			knownNodeAddresses = receivedMessage.Addresses
+			initializeNodeAddresses(receivedMessage.Addresses)
 		}
 	case TRANSACTION_MESSAGE_TYPE:
 		{
@@ -62,14 +63,14 @@ func handleMessageType(messType string, mess []byte) {
 			}
 
 			parsedTrans := receivedMessage.ParseToTransaction()
-			err = b.Transact(&parsedTrans, &dbUrl)
+			err = b.DopeTransactions.InsertTransaction(&parsedTrans, &dbUrl)
 			if err != nil {
 				log.Infof("Unsuccessful transaction. Reeason: %s", err)
 			} else {
 				log.Info("Transaction successfull")
 			}
 		}
-	case STRUCTURE_INIT_MESSAGE_TYPE:
+	case SYNC_STRUCTURE_MESSAGE_TYPE:
 		{
 			var receivedMessage messages.StructureResponse
 			err := json.Unmarshal(mess, &receivedMessage)
@@ -78,8 +79,8 @@ func handleMessageType(messType string, mess []byte) {
 				break
 			}
 
-			b.InitializeBlockchain(&receivedMessage.Blockchain)
-			b.InitalizeTransactions(&receivedMessage.Transactions)
+			b.SyncBlockchain(&receivedMessage.Blockchain)
+			b.SyncTransactions(&receivedMessage.Transactions)
 		}
 	case BLOCK_MESSAGE_TYPE:
 		{
