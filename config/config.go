@@ -7,10 +7,15 @@ import (
 type ConfigKey string;
 
 const (
+	// Server
 	ServerPortKey ConfigKey = "server.port"
+	// Bootstrap
 	IsBootstrapKey = "bootstrap.bootstrap"
 	BootstrapServerAddressKey = "bootstrap.bootstrap-address"
+	// DB
 	DbUrlKey = "db.address"
+	// VM
+	VmAddressKey = "vm.address";
 )
 
 func setupDefaults() {
@@ -18,6 +23,7 @@ func setupDefaults() {
 	setupDefaultWithKey(IsBootstrapKey, false);
 	setupDefaultWithKey(BootstrapServerAddressKey, "127.0.0.1:80");
 	setupDefaultWithKey(DbUrlKey, "http://localhost:42069");
+	setupDefaultWithKey(VmAddressKey, "./dopechain-vm");
 }
 
 func setupDefaultWithKey(key ConfigKey, value any) {
