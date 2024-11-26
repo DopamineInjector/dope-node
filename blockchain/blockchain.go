@@ -2,7 +2,8 @@ package blockchain
 
 import (
 	"fmt"
-	"log"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type Blockchain []Block
@@ -11,9 +12,11 @@ var DopeChain Blockchain
 
 func SyncBlockchain(chain *Blockchain) {
 	DopeChain = *chain
+	log.Info("Synchronized blockchain: ")
+	DopeChain.Print()
 }
 
-func (bchain *Blockchain) InsertToBlockchain(content *string) {
+func (bchain *Blockchain) InsertToBlockchain(content *string) *Block {
 	var newBlock *Block
 
 	if len(*bchain) == 0 {
@@ -26,10 +29,11 @@ func (bchain *Blockchain) InsertToBlockchain(content *string) {
 	}
 
 	*bchain = append(*bchain, *newBlock)
+	return newBlock
 }
 
-func (bchain *Blockchain) ToString() {
-	for i := 0; i < len(*bchain); i++ {
-		fmt.Println((*bchain)[i])
+func (bchain *Blockchain) Print() {
+	for _, b := range *bchain {
+		fmt.Println(b)
 	}
 }

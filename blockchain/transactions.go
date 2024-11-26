@@ -74,6 +74,12 @@ func prepareInsertValueRequest(key *string, value *float64) db.InsertValueReques
 	return db.InsertValueRequest{Key: *key, Value: strconv.FormatFloat(*value, 'f', 2, 64), Namespace: "transaction"}
 }
 
-func removeAppliedTransactions() {
+func (trans *Transactions) Print() {
+	for _, t := range *trans {
+		fmt.Println(t)
+	}
+}
 
+func (t *Transaction) ToString() string {
+	return fmt.Sprintf("Transaction: {sender: %s, receiver: %s, amount: %f}", t.Sender, t.Receiver, t.Amount)
 }

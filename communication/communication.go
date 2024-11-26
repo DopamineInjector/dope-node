@@ -12,6 +12,7 @@ import (
 	"dope-node/blockchain"
 	"dope-node/communication/messages"
 
+	db "github.com/DopamineInjector/go-dope-db"
 	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
 )
@@ -19,17 +20,19 @@ import (
 var knownNodeAddresses = make([]string, 0)
 var dbUrl string
 var fullNodeAddress string
+var AddressesFetched = make(chan bool)
 
 const (
-	NODE_ENDPOINT          = "/node"
-	BOOTSTRAP_ENDPOINT     = "/bootstrap"
-	STRUCTURE_INIT_MESSAGE = "structure"
+	NODE_ENDPOINT                  = "/node"
+	BOOTSTRAP_ENDPOINT             = "/bootstrap"
+	STRUCTURE_SYNC_REQUEST_MESSAGE = "sync"
 )
 
 func ConnectToNetwork(bootstrapAddr *string, ip *string, port *int, url string) error {
 	dbUrl = url
 	serverReady := make(chan bool)
 	fullNodeAddress = fmt.Sprintf("%s:%d", *ip, *port)
+	insertNamespace()
 
 	go func() {
 		nodeAddress := fmt.Sprintf("%s:%d", *ip, *port)
@@ -49,6 +52,7 @@ func ConnectToNetwork(bootstrapAddr *string, ip *string, port *int, url string) 
 		return fmt.Errorf("failed to fetch node addresses. Reason: %s", err)
 	}
 
+	<-AddressesFetched
 	err = syncBlockchain()
 	if err != nil {
 		return fmt.Errorf("failed to fetch blockchain structure. Reason: %s", err)
@@ -69,14 +73,22 @@ func StartConsoleListener() {
 			os.Exit(0)
 		case "transaction":
 			fmt.Println("Enter amount: ")
+			scanner.Scan()
 			amount := scanner.Text()
 			fmt.Println("Enter receiver: ")
+			scanner.Scan()
 			receiver := scanner.Text()
 			beginTransaction(amount, receiver)
 		case "block":
 			fmt.Println("Block content: ")
+			scanner.Scan()
 			content := scanner.Text()
 			digBlock(content)
+		case "status":
+			fmt.Println("Blockchain: ")
+			blockchain.DopeChain.Print()
+			fmt.Println("Transactions: ")
+			blockchain.DopeTransactions.Print()
 		default:
 			log.Infof("Unknown command: %s\n", input)
 		}
@@ -88,8 +100,18 @@ func StartConsoleListener() {
 }
 
 func digBlock(content string) {
-	blockchain.DopeChain.InsertToBlockchain(&content)
+	b := blockchain.DopeChain.InsertToBlockchain(&content)
 	blockchain.DopeTransactions = blockchain.DopeTransactions[:0]
+
+	connectMessage := messages.BlockMessage{Type: "block", Block: *b}
+	serializedMess, err := json.Marshal((connectMessage))
+	if err != nil {
+		log.Warnf("Cannot serialize. Reason: %s", err)
+		return
+	}
+
+	log.Infof("Block with %s content initialized", content)
+	sendWsMessageToAllNodes(serializedMess)
 }
 
 func beginTransaction(amount string, receiver string) {
@@ -108,7 +130,15 @@ func beginTransaction(amount string, receiver string) {
 		return
 	}
 
+	transMess := messages.TransactionRequest{Type: "transaction", Amount: parsedAmount, Receiver: receiver, Sender: sender}
+	serializedMess, err := json.Marshal(transMess)
+	if err != nil {
+		log.Warnf("Cannot serialize transaction. Reason: %s", err)
+		return
+	}
+
 	log.Infof("transaction from %s to %s inserted successfully", fullNodeAddress, sender)
+	sendWsMessageToAllNodes(serializedMess)
 }
 
 func syncBlockchain() error {
@@ -118,14 +148,14 @@ func syncBlockchain() error {
 		return nil
 	}
 
-	initMess := messages.StructureRequest{Type: STRUCTURE_INIT_MESSAGE}
-	serializedMess, err := json.Marshal((initMess))
+	initMess := messages.StructureRequest{Type: STRUCTURE_SYNC_REQUEST_MESSAGE, Requester: fullNodeAddress}
+	serializedMess, err := json.Marshal(initMess)
 	if err != nil {
 		return err
 	}
 
 	// assuming that all the nodes have the same blockchain - so sending request to only one
-	err = sendWsMessage(&knownNodeAddresses[0], serializedMess)
+	err = sendWsMessage(&knownNodeAddresses[0], serializedMess, NODE_ENDPOINT)
 	if err != nil {
 		return err
 	}
@@ -155,7 +185,7 @@ func fetchNodeAddressesFromBootstrap(bootstrapAddress *string, ip *string, port 
 		return err
 	}
 
-	err = sendWsMessage(bootstrapAddress, serializedMess)
+	err = sendWsMessage(bootstrapAddress, serializedMess, BOOTSTRAP_ENDPOINT)
 	if err != nil {
 		return err
 	}
@@ -163,8 +193,17 @@ func fetchNodeAddressesFromBootstrap(bootstrapAddress *string, ip *string, port 
 	return nil
 }
 
-func sendWsMessage(targetAddress *string, message []byte) error {
-	u := url.URL{Scheme: "ws", Host: *targetAddress, Path: BOOTSTRAP_ENDPOINT}
+func sendWsMessageToAllNodes(message []byte) {
+	for _, addr := range knownNodeAddresses {
+		err := sendWsMessage(&addr, message, NODE_ENDPOINT)
+		if err != nil {
+			log.Warnf("Cannot send digged block to %s. Reason: %s", addr, err)
+		}
+	}
+}
+
+func sendWsMessage(targetAddress *string, message []byte, ep string) error {
+	u := url.URL{Scheme: "ws", Host: *targetAddress, Path: ep}
 	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 	if err != nil {
 		return err
@@ -175,7 +214,7 @@ func sendWsMessage(targetAddress *string, message []byte) error {
 	if err != nil {
 		return err
 	}
-	log.Infof("Message sent to %s", *targetAddress)
+	log.Debugf("Message sent to %s", *targetAddress)
 
 	return nil
 }
@@ -201,4 +240,11 @@ func deleteAddress(address *string) []string {
 	}
 
 	return knownNodeAddresses
+}
+
+// temporary
+func insertNamespace() {
+	log.Info("New namespace registered - received 10.0$ to spend in the casino :)")
+	db.CreateNamespace(dbUrl, db.SelectNamespaceRequest{Namespace: "transaction"})
+	db.InsertValue(dbUrl, db.InsertValueRequest{Key: fullNodeAddress, Value: "10.0", Namespace: "transaction"})
 }

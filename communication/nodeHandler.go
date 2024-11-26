@@ -10,11 +10,11 @@ import (
 )
 
 const (
-	ADDRESSES_MESSAGE_TYPE      = "addresses"
-	TRANSACTION_MESSAGE_TYPE    = "transaction"
-	SYNC_STRUCTURE_MESSAGE_TYPE = "structure"
-	BLOCK_MESSAGE_TYPE          = "block"
-	INVOKE_MESSAGE_TYPE         = "invoke"
+	ADDRESSES_MESSAGE_TYPE              = "addresses"
+	TRANSACTION_MESSAGE_TYPE            = "transaction"
+	SYNC_STRUCTURE_MESSAGE_TYPE         = "structure"
+	BLOCK_MESSAGE_TYPE                  = "block"
+	STRUCTURE_SYNC_REQUEST_MESSAGE_TYPE = "sync"
 )
 
 func nodeHandler(w http.ResponseWriter, r *http.Request) {
@@ -52,6 +52,7 @@ func handleMessageType(messType string, mess []byte) {
 				break
 			}
 			initializeNodeAddresses(receivedMessage.Addresses)
+			AddressesFetched <- true
 		}
 	case TRANSACTION_MESSAGE_TYPE:
 		{
@@ -92,6 +93,27 @@ func handleMessageType(messType string, mess []byte) {
 			}
 
 			b.DopeChain = append(b.DopeChain, receivedMessage.Block)
+			b.DopeTransactions = b.DopeTransactions[:0]
+		}
+	case STRUCTURE_SYNC_REQUEST_MESSAGE_TYPE:
+		{
+			var receivedMessage messages.StructureRequest
+			err := json.Unmarshal(mess, &receivedMessage)
+			if err != nil {
+				log.Warnf("Failed to deserialize message. Reason: %s", err)
+				break
+			}
+
+			mess := messages.StructureResponse{Type: SYNC_STRUCTURE_MESSAGE_TYPE, Blockchain: b.DopeChain, Transactions: b.DopeTransactions}
+			serializedMess, err := json.Marshal(mess)
+			if err != nil {
+				log.Warnf("Cannot serialize. Reason: %s", err)
+				return
+			}
+
+			log.Info("Sending: ")
+			b.DopeChain.Print()
+			sendWsMessage(&receivedMessage.Requester, serializedMess, "/node")
 		}
 	}
 

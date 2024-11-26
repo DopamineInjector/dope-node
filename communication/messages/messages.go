@@ -26,7 +26,8 @@ type TransactionRequest struct {
 }
 
 type StructureRequest struct {
-	Type string `json:"type"`
+	Type      string `json:"type"`
+	Requester string `json:"requester"`
 }
 
 type StructureResponse struct {
