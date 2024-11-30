@@ -25,6 +25,7 @@ func handleSmartContract(w http.ResponseWriter, r *http.Request) {
 			Output string `json:"output"`
 		}
 
+		// verify signature
 		// logic
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(output)

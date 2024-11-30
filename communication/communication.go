@@ -169,9 +169,11 @@ func fetchNodeAddressesFromBootstrap(bootstrapAddress *string, ip *string, port 
 
 func sendWsMessageToAllNodes(message []byte) {
 	for _, addr := range knownNodeAddresses {
-		err := sendWsMessage(&addr, message, NODE_ENDPOINT)
-		if err != nil {
-			log.Warnf("Cannot send digged block to %s. Reason: %s", addr, err)
+		if addr != fullNodeAddress {
+			err := sendWsMessage(&addr, message, NODE_ENDPOINT)
+			if err != nil {
+				log.Warnf("Cannot send digged block to %s. Reason: %s", addr, err)
+			}
 		}
 	}
 }

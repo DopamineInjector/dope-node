@@ -21,6 +21,7 @@ func handleAccounts(w http.ResponseWriter, r *http.Request) {
 
 		utils.RegisterAccount(dbUrl, input.PublicKey, input.PrivateKey)
 		w.WriteHeader(http.StatusCreated)
+		log.Infof("%s created", input.PublicKey)
 	} else {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
@@ -47,8 +48,9 @@ func handleAccountsInfo(w http.ResponseWriter, r *http.Request) {
 			log.Warnf("Error while receiving user's balance: %d", balance)
 			w.WriteHeader(http.StatusBadRequest)
 		} else {
+			output.Balance = balance
+			output.PublicKey = input.PublicKey
 			json.NewEncoder(w).Encode(output)
-			w.WriteHeader(http.StatusOK)
 		}
 	} else {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)

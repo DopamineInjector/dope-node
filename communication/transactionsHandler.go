@@ -24,6 +24,7 @@ func handleTransfer(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		// verify signature
 		beginTransaction(input.Payload.Sender, input.Payload.Amount, input.Payload.Recipient)
 		w.WriteHeader(http.StatusCreated)
 	} else {
