@@ -41,11 +41,11 @@ func handleTransfer(w http.ResponseWriter, r *http.Request) {
 
 func beginTransaction(sender string, amount int, receiver string) {
 	transToSend := blockchain.Transaction{Amount: amount, Receiver: receiver, Sender: sender}
-	err := blockchain.DopeTransactions.InsertTransaction(&transToSend, &dbUrl)
-	if err != nil {
-		log.Warnf("cannot make transaction. Reason: %s", err)
+	if sender == receiver {
+		log.Info("cannot send $ to yourself")
 		return
 	}
+	blockchain.DopeTransactions.SaveTransaction(&transToSend)
 
 	transMess := messages.TransactionRequest{Type: "transaction", Amount: amount, Receiver: receiver, Sender: sender}
 	serializedMess, err := json.Marshal(transMess)

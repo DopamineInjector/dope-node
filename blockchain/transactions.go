@@ -49,8 +49,6 @@ func (dTransactions *Transactions) InsertTransaction(transaction *Transaction, d
 		return err
 	}
 
-	(*dTransactions).SaveTransaction(transaction)
-
 	return nil
 }
 
