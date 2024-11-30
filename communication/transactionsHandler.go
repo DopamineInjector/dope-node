@@ -3,7 +3,9 @@ package communication
 import (
 	"dope-node/blockchain"
 	"dope-node/communication/messages"
+	"dope-node/utils"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	log "github.com/sirupsen/logrus"
@@ -24,7 +26,11 @@ func handleTransfer(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// verify signature
+		result, err := utils.VerifySignature(input.Payload.Sender, fmt.Sprintf("%v", input.Payload), input.Signature)
+		if err != nil || !result {
+			log.Infof("Invalid signature. Reason: %s", err)
+			return
+		}
 		beginTransaction(input.Payload.Sender, input.Payload.Amount, input.Payload.Recipient)
 		w.WriteHeader(http.StatusCreated)
 	} else {
