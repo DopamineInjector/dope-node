@@ -1,7 +1,9 @@
 package communication
 
 import (
+	"dope-node/utils"
 	"encoding/json"
+	"fmt"
 	"net/http"
 )
 
@@ -25,7 +27,8 @@ func handleSmartContract(w http.ResponseWriter, r *http.Request) {
 			Output string `json:"output"`
 		}
 
-		// verify signature
+		utils.VerifySignature(input.Signature, fmt.Sprintf("%v", input.Payload), input.Signature)
+
 		// logic
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(output)
