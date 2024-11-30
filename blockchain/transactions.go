@@ -1,16 +1,14 @@
 package blockchain
 
 import (
+	"dope-node/utils"
 	"fmt"
-	"strconv"
-
-	db "github.com/DopamineInjector/go-dope-db"
 )
 
 type Transaction struct {
 	Sender   string
 	Receiver string
-	Amount   float64
+	Amount   int
 }
 
 type Transactions []Transaction
@@ -26,12 +24,12 @@ func (dTransactions *Transactions) InsertTransaction(transaction *Transaction, d
 		return fmt.Errorf("database URL not set")
 	}
 
-	senderBalance, err := getUserBalance(dbUrl, &transaction.Sender)
+	senderBalance, err := utils.GetUserBalance(*dbUrl, transaction.Sender)
 	if err != nil {
 		return err
 	}
 
-	receiverBalance, err := getUserBalance(dbUrl, &transaction.Receiver)
+	receiverBalance, err := utils.GetUserBalance(*dbUrl, transaction.Receiver)
 	if err != nil {
 		return err
 	}
@@ -42,11 +40,11 @@ func (dTransactions *Transactions) InsertTransaction(transaction *Transaction, d
 		return fmt.Errorf("not enouth $")
 	}
 
-	_, err = db.InsertValue(*dbUrl, prepareInsertValueRequest(&transaction.Sender, &newSenderBalance))
+	_, err = utils.UpddateBalance(*dbUrl, transaction.Sender, newSenderBalance)
 	if err != nil {
 		return err
 	}
-	_, err = db.InsertValue(*dbUrl, prepareInsertValueRequest(&transaction.Receiver, &newReceiverBalance))
+	_, err = utils.UpddateBalance(*dbUrl, transaction.Receiver, newReceiverBalance)
 	if err != nil {
 		return err
 	}
@@ -56,24 +54,6 @@ func (dTransactions *Transactions) InsertTransaction(transaction *Transaction, d
 	return nil
 }
 
-func getUserBalance(dbUrl *string, user *string) (float64, error) {
-	balance, err := db.GetValue(*dbUrl, db.SelectValueRequest{Key: *user, Namespace: "transaction"})
-	if err != nil {
-		return 0.0, err
-	}
-
-	balanceParsed, err := strconv.ParseFloat(balance.Value, 64)
-	if err != nil {
-		return 0.0, err
-	}
-
-	return balanceParsed, nil
-}
-
-func prepareInsertValueRequest(key *string, value *float64) db.InsertValueRequest {
-	return db.InsertValueRequest{Key: *key, Value: strconv.FormatFloat(*value, 'f', 2, 64), Namespace: "transaction"}
-}
-
 func (trans *Transactions) Print() {
 	for _, t := range *trans {
 		fmt.Println(t)
@@ -81,5 +61,5 @@ func (trans *Transactions) Print() {
 }
 
 func (t *Transaction) ToString() string {
-	return fmt.Sprintf("Transaction: {sender: %s, receiver: %s, amount: %f}", t.Sender, t.Receiver, t.Amount)
+	return fmt.Sprintf("Transaction: {sender: %s, receiver: %s, amount: %d}", t.Sender, t.Receiver, t.Amount)
 }

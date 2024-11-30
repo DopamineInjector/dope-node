@@ -1,6 +1,7 @@
 package communication
 
 import (
+	"dope-node/utils"
 	"encoding/json"
 	"net/http"
 
@@ -18,7 +19,7 @@ func handleAccounts(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		registerAccount(input.PublicKey, input.PrivateKey)
+		utils.RegisterAccount(dbUrl, input.PublicKey, input.PrivateKey)
 		w.WriteHeader(http.StatusCreated)
 	} else {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -40,7 +41,7 @@ func handleAccountsInfo(w http.ResponseWriter, r *http.Request) {
 			Balance   int    `json:"balance"`
 		}
 
-		balance, err := getUserBalance(input.PublicKey)
+		balance, err := utils.GetUserBalance(dbUrl, input.PublicKey)
 		w.Header().Set("Content-Type", "application/json")
 		if err != nil {
 			log.Warnf("Error while receiving user's balance: %d", balance)
