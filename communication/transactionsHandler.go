@@ -29,6 +29,7 @@ func handleTransfer(w http.ResponseWriter, r *http.Request) {
 		result, err := utils.VerifySignature(input.Payload.Sender, fmt.Sprintf("%v", input.Payload), input.Signature)
 		if err != nil || !result {
 			log.Infof("Invalid signature. Reason: %s", err)
+			w.WriteHeader(http.StatusForbidden)
 			return
 		}
 		beginTransaction(input.Payload.Sender, input.Payload.Amount, input.Payload.Recipient)
