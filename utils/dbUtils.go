@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"strconv"
 
 	db "github.com/DopamineInjector/go-dope-db"
@@ -17,6 +18,9 @@ func GetUserBalance(dbUrl string, pub string) (int, error) {
 	balance, err := db.GetValue(dbUrl, db.SelectValueRequest{Key: pub, Namespace: "balance"})
 	if err != nil {
 		return 0, err
+	}
+	if balance == nil {
+		return 0, fmt.Errorf("given user doesn't exist")
 	}
 
 	parsedBalance, err := strconv.Atoi(balance.Value)

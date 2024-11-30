@@ -102,7 +102,6 @@ func StartConsoleListener() {
 
 func digBlock(content string) {
 	b := blockchain.DopeChain.InsertToBlockchain(&content)
-	blockchain.DopeTransactions = blockchain.DopeTransactions[:0]
 
 	connectMessage := messages.BlockMessage{Type: "block", Block: *b}
 	serializedMess, err := json.Marshal((connectMessage))
@@ -112,7 +111,19 @@ func digBlock(content string) {
 	}
 
 	log.Infof("Block with %s content initialized", content)
+	resolveTransactions()
 	sendWsMessageToAllNodes(serializedMess)
+}
+
+func resolveTransactions() {
+	for _, tr := range blockchain.DopeTransactions {
+		err := blockchain.DopeTransactions.InsertTransaction(&tr, &dbUrl)
+		if err != nil {
+			log.Infof("cannot resolve transaction: %s", err)
+		}
+	}
+
+	blockchain.DopeTransactions = blockchain.DopeTransactions[:0]
 }
 
 func syncBlockchain() error {
