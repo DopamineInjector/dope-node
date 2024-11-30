@@ -1,10 +1,14 @@
 package communication
 
 import (
+	"dope-node/blockchain"
 	"dope-node/utils"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os/exec"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func handleSmartContract(w http.ResponseWriter, r *http.Request) {
@@ -29,7 +33,15 @@ func handleSmartContract(w http.ResponseWriter, r *http.Request) {
 
 		utils.VerifySignature(input.Signature, fmt.Sprintf("%v", input.Payload), input.Signature)
 
-		// logic
+		if input.View {
+			cmd := exec.Command("/bin/dopechain-vm", "-e", input.Payload.Entrypoint, "-a", input.Payload.Args, "-s", input.Payload.Sender, "--block-number", fmt.Sprintf("%d", len(blockchain.DopeChain)-1))
+			out, err := cmd.CombinedOutput()
+			if err != nil {
+				log.Warnf("error while running VM: %s", err)
+			}
+			log.Infof("VM output: %s", out)
+		}
+
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(output)
 		w.WriteHeader(http.StatusOK)
