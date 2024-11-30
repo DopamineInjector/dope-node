@@ -3,6 +3,8 @@ package communication
 import (
 	"encoding/json"
 	"net/http"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func handleAccounts(w http.ResponseWriter, r *http.Request) {
@@ -16,7 +18,7 @@ func handleAccounts(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// logic
+		registerAccount(input.PublicKey, input.PrivateKey)
 		w.WriteHeader(http.StatusCreated)
 	} else {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -35,13 +37,18 @@ func handleAccountsInfo(w http.ResponseWriter, r *http.Request) {
 		}
 		var output struct {
 			PublicKey string `json:"publicKey"`
-			Balance   int32  `json:"balance"`
+			Balance   int    `json:"balance"`
 		}
 
-		// logic
+		balance, err := getUserBalance(input.PublicKey)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(output)
-		w.WriteHeader(http.StatusOK)
+		if err != nil {
+			log.Warnf("Error while receiving user's balance: %d", balance)
+			w.WriteHeader(http.StatusBadRequest)
+		} else {
+			json.NewEncoder(w).Encode(output)
+			w.WriteHeader(http.StatusOK)
+		}
 	} else {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
