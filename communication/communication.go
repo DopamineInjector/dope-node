@@ -23,6 +23,11 @@ var fullNodeAddress string
 var AddressesFetched = make(chan bool)
 
 const (
+	BASE_URL                       = "/api"
+	ACCOUNTS_ENDPOINT              = BASE_URL + "/account"
+	ACCOUNTS_INFO_ENDPOINT         = ACCOUNTS_ENDPOINT + "/info"
+	TRANSFER_ENDPOINT              = BASE_URL + "/transfer"
+	SMARTCONTRACT_ENDPOINT         = BASE_URL + "/smartContract"
 	NODE_ENDPOINT                  = "/node"
 	BOOTSTRAP_ENDPOINT             = "/bootstrap"
 	STRUCTURE_SYNC_REQUEST_MESSAGE = "sync"
@@ -37,6 +42,11 @@ func ConnectToNetwork(bootstrapAddr *string, ip *string, port *int, url string) 
 	go func() {
 		nodeAddress := fmt.Sprintf("%s:%d", *ip, *port)
 		http.HandleFunc(NODE_ENDPOINT, nodeHandler)
+		http.HandleFunc(ACCOUNTS_ENDPOINT, handleAccounts)
+		http.HandleFunc(ACCOUNTS_INFO_ENDPOINT, handleAccountsInfo)
+		http.HandleFunc(TRANSFER_ENDPOINT, handleTransfer)
+		http.HandleFunc(SMARTCONTRACT_ENDPOINT, handleSmartContract)
+
 		log.Infof("Server running on %s", nodeAddress)
 
 		serverReady <- true
