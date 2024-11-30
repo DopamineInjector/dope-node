@@ -49,9 +49,13 @@ func (dTransactions *Transactions) InsertTransaction(transaction *Transaction, d
 		return err
 	}
 
-	*dTransactions = append(*dTransactions, *transaction)
+	(*dTransactions).SaveTransaction(transaction)
 
 	return nil
+}
+
+func (dTransactions *Transactions) SaveTransaction(transaction *Transaction) {
+	*dTransactions = append(*dTransactions, *transaction)
 }
 
 func (trans *Transactions) Print() {

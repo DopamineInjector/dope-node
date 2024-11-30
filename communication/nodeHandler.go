@@ -64,12 +64,13 @@ func handleMessageType(messType string, mess []byte) {
 			}
 
 			parsedTrans := receivedMessage.ParseToTransaction()
-			err = b.DopeTransactions.InsertTransaction(&parsedTrans, &dbUrl)
-			if err != nil {
-				log.Infof("Unsuccessful transaction. Reeason: %s", err)
-			} else {
-				log.Info("Transaction successfull")
-			}
+			b.DopeTransactions.SaveTransaction(&parsedTrans)
+			//err = b.DopeTransactions.InsertTransaction(&parsedTrans, &dbUrl)
+			// if err != nil {
+			// 	log.Infof("Unsuccessful transaction. Reeason: %s", err)
+			// } else {
+			// 	log.Info("Transaction successfull")
+			// }
 		}
 	case SYNC_STRUCTURE_MESSAGE_TYPE:
 		{
