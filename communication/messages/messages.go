@@ -19,10 +19,10 @@ type AvailableNodesAddresses struct {
 }
 
 type TransactionRequest struct {
-	Type     string  `json:"type"`
-	Sender   string  `json:"sender"`
-	Receiver string  `json:"receiver"`
-	Amount   float64 `json:"amount"`
+	Type     string `json:"type"`
+	Sender   string `json:"sender"`
+	Receiver string `json:"receiver"`
+	Amount   int    `json:"amount"`
 }
 
 type StructureRequest struct {

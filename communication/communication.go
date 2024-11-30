@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"strconv"
 
 	"dope-node/blockchain"
 	"dope-node/communication/messages"
@@ -81,14 +80,6 @@ func StartConsoleListener() {
 		switch input {
 		case "exit":
 			os.Exit(0)
-		case "transaction":
-			fmt.Println("Enter amount: ")
-			scanner.Scan()
-			amount := scanner.Text()
-			fmt.Println("Enter receiver: ")
-			scanner.Scan()
-			receiver := scanner.Text()
-			beginTransaction(amount, receiver)
 		case "block":
 			fmt.Println("Block content: ")
 			scanner.Scan()
@@ -121,33 +112,6 @@ func digBlock(content string) {
 	}
 
 	log.Infof("Block with %s content initialized", content)
-	sendWsMessageToAllNodes(serializedMess)
-}
-
-func beginTransaction(amount string, receiver string) {
-	// TODO: change sender value
-	sender := fullNodeAddress
-	parsedAmount, err := strconv.ParseFloat(amount, 64)
-	if err != nil {
-		log.Warnf("cannot parse amount value. Reason: %s", err)
-		return
-	}
-
-	transToSend := blockchain.Transaction{Amount: parsedAmount, Receiver: receiver, Sender: sender}
-	err = blockchain.DopeTransactions.InsertTransaction(&transToSend, &dbUrl)
-	if err != nil {
-		log.Warnf("cannot make transaction. Reason: %s", err)
-		return
-	}
-
-	transMess := messages.TransactionRequest{Type: "transaction", Amount: parsedAmount, Receiver: receiver, Sender: sender}
-	serializedMess, err := json.Marshal(transMess)
-	if err != nil {
-		log.Warnf("Cannot serialize transaction. Reason: %s", err)
-		return
-	}
-
-	log.Infof("transaction from %s to %s inserted successfully", fullNodeAddress, sender)
 	sendWsMessageToAllNodes(serializedMess)
 }
 
