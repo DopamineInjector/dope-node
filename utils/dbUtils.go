@@ -32,5 +32,5 @@ func UpddateBalance(dbUrl string, pub string, value int) (*db.ChecksumResponse, 
 }
 
 func prepareInsertValueRequest(key *string, value *int) db.InsertValueRequest {
-	return db.InsertValueRequest{Key: *key, Value: strconv.Itoa(*value), Namespace: "transaction"}
+	return db.InsertValueRequest{Key: *key, Value: strconv.Itoa(*value), Namespace: "balance"}
 }

@@ -36,7 +36,7 @@ func ConnectToNetwork(bootstrapAddr *string, ip *string, port *int, url string) 
 	dbUrl = url
 	serverReady := make(chan bool)
 	fullNodeAddress = fmt.Sprintf("%s:%d", *ip, *port)
-	insertNamespace()
+	insertNamespaces()
 
 	go func() {
 		nodeAddress := fmt.Sprintf("%s:%d", *ip, *port)
@@ -216,9 +216,7 @@ func deleteAddress(address *string) []string {
 	return knownNodeAddresses
 }
 
-// temporary
-func insertNamespace() {
-	log.Info("New namespace registered - received 10.0$ to spend in the casino :)")
-	db.CreateNamespace(dbUrl, db.SelectNamespaceRequest{Namespace: "transaction"})
-	db.InsertValue(dbUrl, db.InsertValueRequest{Key: fullNodeAddress, Value: "10.0", Namespace: "transaction"})
+func insertNamespaces() {
+	db.CreateNamespace(dbUrl, db.SelectNamespaceRequest{Namespace: "keys"})
+	db.CreateNamespace(dbUrl, db.SelectNamespaceRequest{Namespace: "balance"})
 }
