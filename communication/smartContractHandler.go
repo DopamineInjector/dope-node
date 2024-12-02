@@ -3,10 +3,10 @@ package communication
 import (
 	"dope-node/blockchain"
 	"dope-node/utils"
+	"dope-node/vm"
+	"encoding/base64"
 	"encoding/json"
-	"fmt"
 	"net/http"
-	"os/exec"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -15,12 +15,12 @@ func handleSmartContract(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 		var input struct {
 			Payload struct {
-				Sender     []byte `json:"sender"`
+				Sender     string `json:"sender"`
 				Contract   string `json:"contract"`
 				Entrypoint string `json:"entrypoint"`
 				Args       string `json:"args"`
 			} `json:"payload"`
-			Signature []byte `json:"signature"`
+			Signature string `json:"signature"`
 			View      bool   `json:"view"`
 		}
 		if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
@@ -35,11 +35,20 @@ func handleSmartContract(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Warnf("error marshalling payload")
 		}
-		utils.VerifySignature([]byte(input.Payload.Sender), string(marshalledPayload), input.Signature)
+		sndr, err := base64.StdEncoding.DecodeString(input.Payload.Sender)
+		if err != nil {
+			http.Error(w, "Invalid sender encoding", http.StatusBadRequest)
+			return
+		}
+		sig, err := base64.StdEncoding.DecodeString(input.Signature)
+		if err != nil {
+			http.Error(w, "Invalid signature encoding", http.StatusBadRequest)
+			return
+		}
+		utils.VerifySignature(sndr, string(marshalledPayload), sig)
 
 		if input.View {
-			cmd := exec.Command("/bin/dopechain-vm", "-e", input.Payload.Entrypoint, "-a", input.Payload.Args, "-s", input.Payload.Sender, "--block-number", fmt.Sprintf("%d", len(blockchain.DopeChain)-1))
-			out, err := cmd.CombinedOutput()
+			out, err := vm.RunContract(&vm.RunContractOpts{BinaryPath: "/bin/dopechain-vm", Entrypoint: input.Payload.Entrypoint, Args: input.Payload.Args, Sender: string(input.Payload.Sender), TransactionId: blockchain.DopeTransactions[len(blockchain.DopeTransactions)-1].Id})
 			if err != nil {
 				log.Warnf("error while running VM: %s", err)
 			}

@@ -4,8 +4,8 @@ import (
 	"dope-node/blockchain"
 	"dope-node/communication/messages"
 	"dope-node/utils"
+	"encoding/base64"
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	log "github.com/sirupsen/logrus"
@@ -26,12 +26,28 @@ func handleTransfer(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		result, err := utils.VerifySignature(input.Payload.Sender, fmt.Sprintf("%v", input.Payload), input.Signature)
+		marshalledPayload, err := json.Marshal(input.Payload)
+		if err != nil {
+			log.Warnf("error marshalling payload")
+		}
+		sndr, err := base64.StdEncoding.DecodeString(input.Payload.Sender)
+		if err != nil {
+			http.Error(w, "Invalid sender encoding", http.StatusBadRequest)
+			return
+		}
+		sig, err := base64.StdEncoding.DecodeString(input.Signature)
+		if err != nil {
+			http.Error(w, "Invalid signature encoding", http.StatusBadRequest)
+			return
+		}
+
+		result, err := utils.VerifySignature(sndr, string(marshalledPayload), sig)
 		if err != nil || !result {
 			log.Infof("Invalid signature. Reason: %s", err)
 			w.WriteHeader(http.StatusForbidden)
 			return
 		}
+
 		beginTransaction(input.Payload.Sender, input.Payload.Amount, input.Payload.Recipient)
 		w.WriteHeader(http.StatusCreated)
 	} else {
