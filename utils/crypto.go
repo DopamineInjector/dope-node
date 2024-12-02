@@ -8,35 +8,18 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/pem"
-	"errors"
 	"fmt"
 	"os"
 )
 
-func VerifySignature(public string, message string, signature string) (bool, error) {
-	block, _ := pem.Decode([]byte(public))
-	if block == nil || block.Type != "PUBLIC KEY" {
-		return false, errors.New("failed to decode public key")
-	}
-
-	publicKey, err := x509.ParsePKIXPublicKey(block.Bytes)
+func VerifySignature(public []byte, message string, signature []byte) (bool, error) {
+	pubKey, err := x509.ParsePKCS1PublicKey(public)
 	if err != nil {
-		return false, fmt.Errorf("failed to parse public key: %v", err)
+		return false, err
 	}
-
-	rsaPublicKey, ok := publicKey.(*rsa.PublicKey)
-	if !ok {
-		return false, errors.New("not an RSA public key")
-	}
-
-	sig, err := base64.StdEncoding.DecodeString(signature)
-	if err != nil {
-		return false, fmt.Errorf("failed to decode signature: %v", err)
-	}
-
 	hashed := sha256.Sum256([]byte(message))
 
-	err = rsa.VerifyPKCS1v15(rsaPublicKey, crypto.SHA256, hashed[:], sig)
+	err = rsa.VerifyPKCS1v15(pubKey, crypto.SHA256, hashed[:], signature)
 	if err != nil {
 		return false, fmt.Errorf("signature verification failed: %v", err)
 	}
