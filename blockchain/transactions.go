@@ -6,6 +6,7 @@ import (
 )
 
 type Transaction struct {
+	Id       string
 	Sender   string
 	Receiver string
 	Amount   int
@@ -53,6 +54,7 @@ func (dTransactions *Transactions) InsertTransaction(transaction *Transaction, d
 }
 
 func (dTransactions *Transactions) SaveTransaction(transaction *Transaction) {
+	transaction.Id = string(len(*dTransactions))
 	*dTransactions = append(*dTransactions, *transaction)
 }
 
@@ -63,5 +65,5 @@ func (trans *Transactions) Print() {
 }
 
 func (t *Transaction) ToString() string {
-	return fmt.Sprintf("Transaction: {sender: %s, receiver: %s, amount: %d}", t.Sender, t.Receiver, t.Amount)
+	return fmt.Sprintf("Transaction: {id: %s, sender: %s, receiver: %s, amount: %d}", t.Id, t.Sender, t.Receiver, t.Amount)
 }
