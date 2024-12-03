@@ -2,6 +2,7 @@ package communication
 
 import (
 	"dope-node/blockchain"
+	"dope-node/config"
 	"dope-node/utils"
 	"dope-node/vm"
 	"encoding/base64"
@@ -45,10 +46,10 @@ func handleSmartContract(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid signature encoding", http.StatusBadRequest)
 			return
 		}
-		utils.VerifySignature(sndr, string(marshalledPayload), sig)
+		utils.VerifySignature(sndr, marshalledPayload, sig)
 
 		if input.View {
-			out, err := vm.RunContract(&vm.RunContractOpts{BinaryPath: "/bin/dopechain-vm", Entrypoint: input.Payload.Entrypoint, Args: input.Payload.Args, Sender: string(input.Payload.Sender), TransactionId: blockchain.DopeTransactions[len(blockchain.DopeTransactions)-1].Id})
+			out, err := vm.RunContract(&vm.RunContractOpts{BinaryPath: config.VmAddressKey, Entrypoint: input.Payload.Entrypoint, Args: input.Payload.Args, Sender: string(input.Payload.Sender), TransactionId: blockchain.DopeTransactions[len(blockchain.DopeTransactions)-1].Id})
 			if err != nil {
 				log.Warnf("error while running VM: %s", err)
 			}

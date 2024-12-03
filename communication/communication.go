@@ -230,6 +230,5 @@ func deleteAddress(address *string) []string {
 }
 
 func insertNamespaces() {
-	db.CreateNamespace(dbUrl, db.SelectNamespaceRequest{Namespace: "keys"})
 	db.CreateNamespace(dbUrl, db.SelectNamespaceRequest{Namespace: "balance"})
 }

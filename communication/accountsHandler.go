@@ -11,15 +11,14 @@ import (
 func handleAccounts(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 		var input struct {
-			PublicKey  string `json:"publicKey"`
-			PrivateKey string `json:"privateKey"`
+			PublicKey string `json:"publicKey"`
 		}
 		if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
 			http.Error(w, "Invalid input", http.StatusBadRequest)
 			return
 		}
 
-		utils.RegisterAccount(dbUrl, input.PublicKey, input.PrivateKey)
+		utils.RegisterAccount(dbUrl, input.PublicKey)
 		w.WriteHeader(http.StatusCreated)
 		log.Infof("%s created", input.PublicKey)
 	} else {
