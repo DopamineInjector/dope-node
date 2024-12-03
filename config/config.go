@@ -20,7 +20,7 @@ const (
 )
 
 func setupDefaults() {
-	setupDefaultWithKey(ServerPortKey, 7313)
+	setupDefaultWithKey(ServerPortKey, 7314)
 	setupDefaultWithKey(IsBootstrapKey, false)
 	setupDefaultWithKey(BootstrapServerAddressKey, "127.0.0.1:7312")
 	setupDefaultWithKey(DbUrlKey, "http://localhost:42069")

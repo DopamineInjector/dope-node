@@ -48,12 +48,15 @@ func handleSmartContract(w http.ResponseWriter, r *http.Request) {
 		}
 		utils.VerifySignature(sndr, marshalledPayload, sig)
 
+		// Empty output string if only viewing
+		output.Output = ""
 		if input.View {
 			out, err := vm.RunContract(&vm.RunContractOpts{BinaryPath: config.VmAddressKey, Entrypoint: input.Payload.Entrypoint, Args: input.Payload.Args, Sender: string(input.Payload.Sender), TransactionId: blockchain.DopeTransactions[len(blockchain.DopeTransactions)-1].Id})
 			if err != nil {
 				log.Warnf("error while running VM: %s", err)
 			}
 			log.Infof("VM output: %s", out)
+			output.Output = out
 		}
 
 		w.Header().Set("Content-Type", "application/json")
