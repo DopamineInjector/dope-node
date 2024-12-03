@@ -8,9 +8,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func RegisterAccount(dbUrl string, pub string, priv string) {
+func RegisterAccount(dbUrl string, pub string) {
 	log.Info("New user registered - received 500$ to spend in the casino :)")
-	db.InsertValue(dbUrl, db.InsertValueRequest{Key: pub, Value: priv, Namespace: "keys"})
 	db.InsertValue(dbUrl, db.InsertValueRequest{Key: pub, Value: "500", Namespace: "balance"})
 }
 

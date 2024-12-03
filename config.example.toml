@@ -1,6 +1,8 @@
 [server]
 # Http port for the node to start listening on
 port = 80
+# Address on which node is running (info for other nodes)
+address = "127.0.0.1"
 
 [bootstrap]
 # Indicates whether this node should broadcast IP addresses to other nodes

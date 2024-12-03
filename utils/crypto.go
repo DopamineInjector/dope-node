@@ -12,12 +12,12 @@ import (
 	"os"
 )
 
-func VerifySignature(public []byte, message string, signature []byte) (bool, error) {
+func VerifySignature(public []byte, message []byte, signature []byte) (bool, error) {
 	pubKey, err := x509.ParsePKCS1PublicKey(public)
 	if err != nil {
 		return false, err
 	}
-	hashed := sha256.Sum256([]byte(message))
+	hashed := sha256.Sum256(message)
 
 	err = rsa.VerifyPKCS1v15(pubKey, crypto.SHA256, hashed[:], signature)
 	if err != nil {

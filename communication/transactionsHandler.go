@@ -41,7 +41,7 @@ func handleTransfer(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		result, err := utils.VerifySignature(sndr, string(marshalledPayload), sig)
+		result, err := utils.VerifySignature(sndr, marshalledPayload, sig)
 		if err != nil || !result {
 			log.Infof("Invalid signature. Reason: %s", err)
 			w.WriteHeader(http.StatusForbidden)
