@@ -44,7 +44,7 @@ func handleAccountsInfo(w http.ResponseWriter, r *http.Request) {
 		balance, err := utils.GetUserBalance(dbUrl, input.PublicKey)
 		w.Header().Set("Content-Type", "application/json")
 		if err != nil {
-			log.Warnf("Error while receiving user's balance: %d", balance)
+			log.Warnf("Error while receiving user's balance: %d", input.PublicKey)
 			w.WriteHeader(http.StatusBadRequest)
 		} else {
 			output.Balance = balance
