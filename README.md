@@ -8,7 +8,6 @@ Body:
 ```ts
 class CreateAccountRequest {
     publicKey: string,
-    privateKey: string,
 }
 ```
 
