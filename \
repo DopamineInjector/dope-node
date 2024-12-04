@@ -14,35 +14,14 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func parseKey(public []byte) (*rsa.PublicKey, error) {
-	pkcsPub, err := x509.ParsePKCS1PublicKey(public)
-	if err != nil {
-		pubKey, err := x509.ParsePKIXPublicKey(public)
-		if err != nil {
-			log.Warn("Could not parse public key from bytes")
-			log.Warn(err.Error())
-			return nil, err
-		}
-		rsaPubKey, ok := pubKey.(*rsa.PublicKey);
-		if !ok {
-			log.Warn("For some reason, the key is wrong")
-			return nil, fmt.Errorf("Wrong key type")
-		}
-		log.Info("Parsed pkix key");
-		return rsaPubKey, nil
-	}
-	log.Info("Parsed pkcs1 key")
-	return pkcsPub, nil
-}
-
 func VerifySignature(public []byte, message []byte, signature []byte) (bool, error) {
-	pubKey, err := parseKey(public);
+	pubKey, err := x509.ParsePKCS1PublicKey(public)
 	if err != nil {
 		log.Warn("Could not parse public key from bytes")
-		log.Warn(err.Error())
 		return false, err
 	}
 	hashed := sha256.Sum256(message)
+
 	err = rsa.VerifyPKCS1v15(pubKey, crypto.SHA256, hashed[:], signature)
 	if err != nil {
 		return false, fmt.Errorf("signature verification failed: %v", err)

@@ -15,12 +15,12 @@ func handleSmartContract(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 		var input struct {
 			Payload struct {
-				Sender     string `json:"sender"`
-				Contract   string `json:"contract"`
+				Sender     []byte `json:"sender"`
+				Contract   []byte `json:"contract"`
 				Entrypoint string `json:"entrypoint"`
 				Args       string `json:"args"`
 			} `json:"payload"`
-			Signature string `json:"signature"`
+			Signature []byte `json:"signature"`
 			View      bool   `json:"view"`
 		}
 		if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
@@ -35,34 +35,21 @@ func handleSmartContract(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Warnf("error marshalling payload")
 		}
-		sndr, err := base64.StdEncoding.DecodeString(input.Payload.Sender)
-		if err != nil {
-			http.Error(w, "Invalid sender encoding", http.StatusBadRequest)
-			return
-		}
-		sig, err := base64.StdEncoding.DecodeString(input.Signature)
-		if err != nil {
-			http.Error(w, "Invalid signature encoding", http.StatusBadRequest)
-			return
-		}
-		isOk, _ := utils.VerifySignature(sndr, marshalledPayload, sig);
-		if !isOk {
-			log.Warn("Sent badly signed shit")
-			http.Error(w, "Could not verify signature", http.StatusForbidden);
-			return
-		}
-
-		// Empty output string if only viewing
-		output.Output = ""
-		if input.View {
-			scPath := config.GetString(config.SCAddressKey);
-			out, err := vm.RunContract(&vm.RunContractOpts{BinaryPath: scPath, Entrypoint: input.Payload.Entrypoint, Args: input.Payload.Args, Sender: string(input.Payload.Sender), TransactionId: "random", BlockNumber: "2137"})
-			if err != nil {
-				log.Warnf("error while running VM: %s", err)
+		if !input.View {
+			if isOk, _ := utils.VerifySignature(input.Payload.Sender, marshalledPayload, input.Signature); !isOk {
+				log.Warn("Sent badly signed shit")
+				http.Error(w, "Could not verify signature", http.StatusForbidden);
+				return
 			}
-			log.Infof("VM output: %s", out)
-			output.Output = out
 		}
+		stringSender := base64.StdEncoding.EncodeToString(input.Payload.Sender)
+		scPath := config.GetString(config.SCAddressKey);
+		out, err := vm.RunContract(&vm.RunContractOpts{BinaryPath: scPath, Entrypoint: input.Payload.Entrypoint, Args: input.Payload.Args, Sender: stringSender, TransactionId: "random", BlockNumber: "2137"})
+		if err != nil {
+			log.Warnf("error while running VM: %s", err)
+		}
+		log.Infof("VM output: %s", out)
+		output.Output = out
 
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(output)

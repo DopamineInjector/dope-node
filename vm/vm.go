@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"dope-node/config"
 	"os/exec"
+
+	log "github.com/sirupsen/logrus"
 )
 
 
@@ -38,8 +40,12 @@ func RunContract(options *RunContractOpts) (string, error) {
 	var stdout, stderr bytes.Buffer;
 	cmd.Stderr = &stderr;
 	cmd.Stdout = &stdout;
+	for _, a := range(cmd.Args) {
+		log.Warn(a)
+	}
 	err := cmd.Run();
 	if err != nil {
+		log.Warnf("args")
 		return string(stderr.Bytes()), err
 	}
 	return string(stdout.Bytes()), nil
