@@ -17,3 +17,5 @@ address = "http://localhost:42069"
 [vm]
 # Address of dopechain-vm binary
 address = "path/to/dopechain-vm"
+# Adress of compiled SC code (only for testing)
+sc-address = "path/to/nft/wasm/binary"

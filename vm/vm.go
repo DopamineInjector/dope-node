@@ -40,7 +40,7 @@ func RunContract(options *RunContractOpts) (string, error) {
 	cmd.Stdout = &stdout;
 	err := cmd.Run();
 	if err != nil {
-		return "", err
+		return string(stderr.Bytes()), err
 	}
 	return string(stdout.Bytes()), nil
 }

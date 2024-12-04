@@ -1,7 +1,6 @@
 package communication
 
 import (
-	"dope-node/blockchain"
 	"dope-node/config"
 	"dope-node/utils"
 	"dope-node/vm"
@@ -51,7 +50,8 @@ func handleSmartContract(w http.ResponseWriter, r *http.Request) {
 		// Empty output string if only viewing
 		output.Output = ""
 		if input.View {
-			out, err := vm.RunContract(&vm.RunContractOpts{BinaryPath: config.VmAddressKey, Entrypoint: input.Payload.Entrypoint, Args: input.Payload.Args, Sender: string(input.Payload.Sender), TransactionId: blockchain.DopeTransactions[len(blockchain.DopeTransactions)-1].Id})
+			scPath := config.GetString(config.SCAddressKey);
+			out, err := vm.RunContract(&vm.RunContractOpts{BinaryPath: scPath, Entrypoint: input.Payload.Entrypoint, Args: input.Payload.Args, Sender: string(input.Payload.Sender), TransactionId: "random", BlockNumber: "2137"})
 			if err != nil {
 				log.Warnf("error while running VM: %s", err)
 			}
