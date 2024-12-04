@@ -16,7 +16,8 @@ const (
 	// DB
 	DbUrlKey = "db.address"
 	// VM
-	VmAddressKey = "vm.address"
+	VmAddressKey = "vm.address";
+	SCAddressKey = "vm.sc-address"
 )
 
 func setupDefaults() {
@@ -25,8 +26,10 @@ func setupDefaults() {
 	setupDefaultWithKey(BootstrapServerAddressKey, "127.0.0.1:7312")
 	setupDefaultWithKey(DbUrlKey, "http://localhost:42069")
 	setupDefaultWithKey(VmAddressKey, "/bin/dopechain-vm")
+	setupDefaultWithKey(SCAddressKey, "./dopechain_contracts.wasm");
 	setupDefaultWithKey(ServerIpAddressKey, "127.0.0.1")
 }
+
 
 func setupDefaultWithKey(key ConfigKey, value any) {
 	viper.SetDefault(string(key), value)
