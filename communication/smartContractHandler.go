@@ -45,7 +45,12 @@ func handleSmartContract(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid signature encoding", http.StatusBadRequest)
 			return
 		}
-		utils.VerifySignature(sndr, marshalledPayload, sig)
+		isOk, _ := utils.VerifySignature(sndr, marshalledPayload, sig);
+		if !isOk {
+			log.Warn("Sent badly signed shit")
+			http.Error(w, "Could not verify signature", http.StatusForbidden);
+			return
+		}
 
 		// Empty output string if only viewing
 		output.Output = ""
