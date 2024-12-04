@@ -51,9 +51,10 @@ func handleSmartContract(w http.ResponseWriter, r *http.Request) {
 		log.Infof("VM output: %s", out)
 		output.Output = out
 
+		body, _ := json.Marshal(output);
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(output)
 		w.WriteHeader(http.StatusOK)
+		w.Write(body)
 	} else {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}

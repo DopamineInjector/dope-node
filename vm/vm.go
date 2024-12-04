@@ -35,17 +35,18 @@ func getDbAdress() string {
 func RunContract(options *RunContractOpts) (string, error) {
 	vmAddress := getVmAddress();
 	dbAddress := getDbAdress();
+	// Why? I actually ran out of ideas on how to fix this piece of shit system.
 	// Do kebab kraftowy like in Kebab Emporium Gdańsk Chełm
 	cmd := exec.Command(vmAddress, "-b", options.BinaryPath, "--blockaddr", options.TransactionId, "-d", dbAddress, "-s", options.Sender, "--block-number", options.BlockNumber, "-e", options.Entrypoint, "-a", options.Args)
 	var stdout, stderr bytes.Buffer;
 	cmd.Stderr = &stderr;
 	cmd.Stdout = &stdout;
-	for _, a := range(cmd.Args) {
-		log.Warn(a)
-	}
 	err := cmd.Run();
 	if err != nil {
 		log.Warnf("args")
+		for _, a := range(cmd.Args) {
+			log.Warn(a)
+		}
 		return string(stderr.Bytes()), err
 	}
 	return string(stdout.Bytes()), nil
