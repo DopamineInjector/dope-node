@@ -38,7 +38,6 @@ func handleSmartContract(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid signature encoding", http.StatusBadRequest)
 			return
 		}
-		utils.VerifySignature(sndr, marshalledPayload, sig)
 
 		// Empty output string if not viewing
 		output.Output = ""
@@ -50,13 +49,22 @@ func handleSmartContract(w http.ResponseWriter, r *http.Request) {
 			log.Infof("VM output: %s", out)
 			output.Output = out
 		} else {
-			parsedSC := input.ParseToSmartContract()
-			blockchain.DopeContracts.SaveContract(&parsedSC)
+			res, err := utils.VerifySignature(sndr, marshalledPayload, sig)
+			if err != nil {
+				w.WriteHeader(http.StatusForbidden)
+				log.Infof("Error while veryfying failed. Reason: %s", err)
+			}
+			if res {
+				parsedSC := input.ParseToSmartContract()
+				blockchain.DopeContracts.SaveContract(&parsedSC)
+			} else {
+				w.WriteHeader(http.StatusForbidden)
+				log.Info("Verification unsuccessfull")
+			}
 		}
-
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(output)
-		w.WriteHeader(http.StatusOK)
+
 	} else {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
