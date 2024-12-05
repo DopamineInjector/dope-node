@@ -1,6 +1,8 @@
 package communication
 
 import (
+	"dope-node/blockchain"
+	"dope-node/communication/messages"
 	"dope-node/config"
 	"dope-node/utils"
 	"dope-node/vm"
@@ -13,16 +15,7 @@ import (
 
 func handleSmartContract(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
-		var input struct {
-			Payload struct {
-				Sender     []byte `json:"sender"`
-				Contract   []byte `json:"contract"`
-				Entrypoint string `json:"entrypoint"`
-				Args       string `json:"args"`
-			} `json:"payload"`
-			Signature []byte `json:"signature"`
-			View      bool   `json:"view"`
-		}
+		var input messages.SmartContractRequest
 		if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
 			http.Error(w, "Invalid input", http.StatusBadRequest)
 			return
@@ -35,26 +28,35 @@ func handleSmartContract(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Warnf("error marshalling payload")
 		}
-		if !input.View {
-			if isOk, _ := utils.VerifySignature(input.Payload.Sender, marshalledPayload, input.Signature); !isOk {
-				log.Warn("Sent badly signed shit")
-				http.Error(w, "Could not verify signature", http.StatusForbidden);
-				return
-			}
-		}
-		stringSender := base64.StdEncoding.EncodeToString(input.Payload.Sender)
-		scPath := config.GetString(config.SCAddressKey);
-		out, err := vm.RunContract(&vm.RunContractOpts{BinaryPath: scPath, Entrypoint: input.Payload.Entrypoint, Args: input.Payload.Args, Sender: stringSender, TransactionId: "random", BlockNumber: "2137"})
+		sndr, err := base64.StdEncoding.DecodeString(input.Payload.Sender)
 		if err != nil {
-			log.Warnf("error while running VM: %s", err)
+			http.Error(w, "Invalid sender encoding", http.StatusBadRequest)
+			return
 		}
-		log.Infof("VM output: %s", out)
-		output.Output = out
+		sig, err := base64.StdEncoding.DecodeString(input.Signature)
+		if err != nil {
+			http.Error(w, "Invalid signature encoding", http.StatusBadRequest)
+			return
+		}
+		utils.VerifySignature(sndr, marshalledPayload, sig)
 
-		body, _ := json.Marshal(output);
+		// Empty output string if not viewing
+		output.Output = ""
+		if input.View {
+			out, err := vm.RunContract(&vm.RunContractOpts{BinaryPath: config.VmAddressKey, Entrypoint: input.Payload.Entrypoint, Args: input.Payload.Args, Sender: string(input.Payload.Sender), TransactionId: blockchain.DopeTransactions[len(blockchain.DopeTransactions)-1].Id})
+			if err != nil {
+				log.Warnf("error while running VM: %s", err)
+			}
+			log.Infof("VM output: %s", out)
+			output.Output = out
+		} else {
+			parsedSC := input.ParseToSmartContract()
+			blockchain.DopeContracts.SaveContract(&parsedSC)
+		}
+
 		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(output)
 		w.WriteHeader(http.StatusOK)
-		w.Write(body)
 	} else {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}

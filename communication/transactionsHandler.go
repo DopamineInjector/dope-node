@@ -11,6 +11,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const MAX_TRANSACTIONS_PER_BLOCK = 5
+
 func handleTransfer(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 		var input struct {
@@ -72,4 +74,8 @@ func beginTransaction(sender string, amount int, receiver string) {
 
 	log.Infof("transaction from %s to %s inserted successfully", fullNodeAddress, sender)
 	sendWsMessageToAllNodes(serializedMess)
+
+	if len(blockchain.DopeTransactions) >= MAX_TRANSACTIONS_PER_BLOCK {
+		digBlock("bloczek")
+	}
 }

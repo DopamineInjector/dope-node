@@ -27,6 +27,7 @@ func (bchain *Blockchain) InsertToBlockchain(content *string) *Block {
 		newBlock = createBlock(&prevBlock, content)
 		log.Println("Created new block: " + newBlock.ToString())
 	}
+	executeContracts()
 
 	*bchain = append(*bchain, *newBlock)
 	return newBlock
