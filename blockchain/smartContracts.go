@@ -25,7 +25,7 @@ func (dContract *SmartContracts) SaveContract(contract *SmartContract) {
 func executeContracts() {
 	scPath := config.GetString(config.SCAddressKey)
 	for _, c := range DopeContracts {
-		out, err := vm.RunContract(&vm.RunContractOpts{BinaryPath: scPath, Entrypoint: c.Entrypoint, Args: c.Args, Sender: string(c.Sender), TransactionId: DopeTransactions[len(DopeTransactions)-1].Id})
+		out, err := vm.RunContract(&vm.RunContractOpts{BinaryPath: scPath, Entrypoint: c.Entrypoint, Args: c.Args, Sender: string(c.Sender), TransactionId: "rand", BlockNumber: "(ro)blok"})
 		if err != nil {
 			log.Warnf("error while running VM: %s", err)
 		}
