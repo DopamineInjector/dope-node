@@ -8,8 +8,8 @@ import (
 )
 
 type SmartContract struct {
-	Sender     string `json:"sender"`
-	Contract   string `json:"contract"`
+	Sender     []byte `json:"sender"`
+	Contract   []byte `json:"contract"`
 	Entrypoint string `json:"entrypoint"`
 	Args       string `json:"args"`
 }
@@ -23,8 +23,9 @@ func (dContract *SmartContracts) SaveContract(contract *SmartContract) {
 }
 
 func executeContracts() {
+	scPath := config.GetString(config.SCAddressKey)
 	for _, c := range DopeContracts {
-		out, err := vm.RunContract(&vm.RunContractOpts{BinaryPath: config.VmAddressKey, Entrypoint: c.Entrypoint, Args: c.Args, Sender: string(c.Sender), TransactionId: DopeTransactions[len(DopeTransactions)-1].Id})
+		out, err := vm.RunContract(&vm.RunContractOpts{BinaryPath: scPath, Entrypoint: c.Entrypoint, Args: c.Args, Sender: string(c.Sender), TransactionId: DopeTransactions[len(DopeTransactions)-1].Id})
 		if err != nil {
 			log.Warnf("error while running VM: %s", err)
 		}

@@ -28,42 +28,30 @@ func handleSmartContract(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Warnf("error marshalling payload")
 		}
-		sndr, err := base64.StdEncoding.DecodeString(input.Payload.Sender)
-		if err != nil {
-			http.Error(w, "Invalid sender encoding", http.StatusBadRequest)
-			return
-		}
-		sig, err := base64.StdEncoding.DecodeString(input.Signature)
-		if err != nil {
-			http.Error(w, "Invalid signature encoding", http.StatusBadRequest)
-			return
-		}
-
-		// Empty output string if not viewing
-		output.Output = ""
 		if input.View {
-			out, err := vm.RunContract(&vm.RunContractOpts{BinaryPath: config.VmAddressKey, Entrypoint: input.Payload.Entrypoint, Args: input.Payload.Args, Sender: string(input.Payload.Sender), TransactionId: blockchain.DopeTransactions[len(blockchain.DopeTransactions)-1].Id})
+			stringSender := base64.StdEncoding.EncodeToString(input.Payload.Sender)
+			scPath := config.GetString(config.SCAddressKey)
+			out, err := vm.RunContract(&vm.RunContractOpts{BinaryPath: scPath, Entrypoint: input.Payload.Entrypoint, Args: input.Payload.Args, Sender: stringSender, TransactionId: "random", BlockNumber: "2137"})
+
 			if err != nil {
 				log.Warnf("error while running VM: %s", err)
 			}
 			log.Infof("VM output: %s", out)
 			output.Output = out
 		} else {
-			res, err := utils.VerifySignature(sndr, marshalledPayload, sig)
-			if err != nil {
-				w.WriteHeader(http.StatusForbidden)
-				log.Infof("Error while veryfying failed. Reason: %s", err)
+			if isOk, _ := utils.VerifySignature(input.Payload.Sender, marshalledPayload, input.Signature); !isOk {
+				log.Warn("Sent badly signed shit")
+				http.Error(w, "Could not verify signature", http.StatusForbidden)
+				return
 			}
-			if res {
-				parsedSC := input.ParseToSmartContract()
-				blockchain.DopeContracts.SaveContract(&parsedSC)
-			} else {
-				w.WriteHeader(http.StatusForbidden)
-				log.Info("Verification unsuccessfull")
-			}
+			parsedSC := input.ParseToSmartContract()
+			blockchain.DopeContracts.SaveContract(&parsedSC)
 		}
+
+		body, _ := json.Marshal(output)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(output)
+		w.WriteHeader(http.StatusOK)
+		w.Write(body)
 
 	} else {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)

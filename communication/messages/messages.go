@@ -41,14 +41,14 @@ type BlockMessage struct {
 	Block blockchain.Block `json:"block"`
 }
 
-type SmartContractRequest struct {
+var SmartContractRequest struct {
 	Payload struct {
-		Sender     string `json:"sender"`
-		Contract   string `json:"contract"`
+		Sender     []byte `json:"sender"`
+		Contract   []byte `json:"contract"`
 		Entrypoint string `json:"entrypoint"`
 		Args       string `json:"args"`
 	} `json:"payload"`
-	Signature string `json:"signature"`
+	Signature []byte `json:"signature"`
 	View      bool   `json:"view"`
 }
 
