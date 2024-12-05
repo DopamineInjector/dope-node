@@ -41,7 +41,7 @@ type BlockMessage struct {
 	Block blockchain.Block `json:"block"`
 }
 
-var SmartContractRequest struct {
+type SmartContractRequest struct {
 	Payload struct {
 		Sender     []byte `json:"sender"`
 		Contract   []byte `json:"contract"`
