@@ -34,3 +34,16 @@ func executeContracts() {
 
 	DopeContracts = DopeContracts[:0]
 }
+
+// Transactable
+
+func (t *SmartContract) run() (*string, error) {
+	scPath := config.GetString(config.SCAddressKey)
+	out, err := vm.RunContract(&vm.RunContractOpts{BinaryPath: scPath, Entrypoint: t.Entrypoint, Args: t.Args, Sender: string(t.Sender), TransactionId: "rand", BlockNumber: "(ro)blok"})
+	if err != nil {
+		log.Warnf("error while running VM: %s", err.Error())
+		return &out, err
+	}
+	log.Infof("VM output: %s", out)
+	return &out, nil
+}

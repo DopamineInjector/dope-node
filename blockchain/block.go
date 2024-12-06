@@ -14,8 +14,7 @@ type Block struct {
 	Content      string
 	PreviousHash string
 	Hash         string
-	Transactions []Transaction
-	Contracts    []SmartContract
+	Transactions []Transactable
 	MPTHash      string
 	dbChecksum   string
 }
@@ -40,8 +39,7 @@ func createBlock(previousBlock *Block, content *string) *Block {
 		Timestamp:    time.Now().Unix(),
 		Content:      *content,
 		PreviousHash: previousBlock.Hash,
-		Transactions: DopeTransactions,
-		Contracts:    DopeContracts,
+		Transactions: make([]Transactable, 0),
 		MPTHash:      "hash",
 		dbChecksum:   "checksum",
 	}
@@ -56,8 +54,7 @@ func createGenesisBlock(content *string) *Block {
 		Timestamp:    time.Now().Unix(),
 		Content:      *content,
 		PreviousHash: "0",
-		Transactions: DopeTransactions,
-		Contracts:    DopeContracts,
+		Transactions: make([]Transactable, 0),
 		MPTHash:      "hash",
 		dbChecksum:   "checksum",
 	}
