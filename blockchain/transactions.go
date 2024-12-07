@@ -15,10 +15,6 @@ type Transaction struct {
 	Amount   int
 }
 
-func (t *Transaction) ToString() string {
-	return fmt.Sprintf("Transaction: {id: %s, sender: %s, receiver: %s, amount: %d}", t.Id, t.Sender, t.Receiver, t.Amount)
-}
-
 // Implementation of transactable
 func (t Transaction) run() (*string, error) {
 	dbUrl := config.GetString(config.DbUrlKey)
@@ -51,6 +47,6 @@ func (t Transaction) run() (*string, error) {
 	return nil, nil
 }
 
-func (trans Transaction) Print() {
+func (trans Transaction) print() {
 	fmt.Printf("Transaction [Id: %s, Sender: %s, Receiver: %s, Amount: %d]", trans.Id, trans.Sender, trans.Receiver, trans.Amount)
 }

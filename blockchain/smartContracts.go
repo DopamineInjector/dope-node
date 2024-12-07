@@ -28,6 +28,6 @@ func (t SmartContract) run() (*string, error) {
 	return &out, nil
 }
 
-func (t SmartContract) Print() {
+func (t SmartContract) print() {
 	fmt.Printf("SC [Sender: %s, Entrypoint: %s]", t.Sender, t.Entrypoint)
 }

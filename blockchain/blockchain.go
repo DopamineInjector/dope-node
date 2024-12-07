@@ -56,6 +56,7 @@ func executeTransactables() {
 		out, err := t.run()
 		if err != nil {
 			log.Warnf("error while running transactable. Reason: %s", err)
+			t.print()
 		} else {
 			log.Infof("transactable result: %s", *out)
 		}
