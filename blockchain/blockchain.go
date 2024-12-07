@@ -7,8 +7,10 @@ import (
 )
 
 type Blockchain []Block
+type Transactables []Transactable
 
 var DopeChain Blockchain
+var DopeTransactables Transactables
 
 func SyncBlockchain(chain *Blockchain) {
 	DopeChain = *chain
@@ -27,14 +29,37 @@ func (bchain *Blockchain) InsertToBlockchain(content *string) *Block {
 		newBlock = createBlock(&prevBlock, content)
 		log.Println("Created new block: " + newBlock.ToString())
 	}
-	executeContracts()
+	executeTransactables()
 
 	*bchain = append(*bchain, *newBlock)
 	return newBlock
+}
+
+func (dTransactable *Transactables) InsertTransactable(t Transactable) {
+	*dTransactable = append(*dTransactable, t)
 }
 
 func (bchain *Blockchain) Print() {
 	for _, b := range *bchain {
 		fmt.Println(b)
 	}
+}
+
+func (trans *Transactables) Print() {
+	for _, t := range *trans {
+		fmt.Println(t)
+	}
+}
+
+func executeTransactables() {
+	for _, t := range DopeTransactables {
+		out, err := t.run()
+		if err != nil {
+			log.Warnf("error while running transactable. Reason: %s", err)
+		} else {
+			log.Infof("transactable result: %s", *out)
+		}
+	}
+
+	DopeTransactables = DopeTransactables[:0]
 }

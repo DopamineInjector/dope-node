@@ -63,7 +63,7 @@ func beginTransaction(sender string, amount int, receiver string) {
 		log.Info("cannot send $ to yourself")
 		return
 	}
-	blockchain.DopeTransactions.SaveTransaction(&transToSend)
+	blockchain.DopeTransactables.InsertTransactable(transToSend)
 
 	transMess := messages.TransactionRequest{Type: "transaction", Amount: amount, Receiver: receiver, Sender: sender}
 	serializedMess, err := json.Marshal(transMess)
@@ -75,7 +75,7 @@ func beginTransaction(sender string, amount int, receiver string) {
 	log.Infof("transaction from %s to %s inserted successfully", fullNodeAddress, sender)
 	sendWsMessageToAllNodes(serializedMess)
 
-	if len(blockchain.DopeTransactions) >= MAX_TRANSACTIONS_PER_BLOCK {
+	if len(blockchain.DopeTransactables) >= MAX_TRANSACTIONS_PER_BLOCK {
 		digBlock("bloczek")
 	}
 }

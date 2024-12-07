@@ -45,7 +45,7 @@ func handleSmartContract(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			parsedSC := input.ParseToSmartContract()
-			blockchain.DopeContracts.SaveContract(&parsedSC)
+			blockchain.DopeTransactables.InsertTransactable(parsedSC)
 		}
 
 		body, _ := json.Marshal(output)

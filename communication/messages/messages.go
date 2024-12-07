@@ -31,9 +31,8 @@ type StructureRequest struct {
 }
 
 type StructureResponse struct {
-	Type         string                  `json:"type"`
-	Blockchain   blockchain.Blockchain   `json:"blockchain"`
-	Transactions blockchain.Transactions `json:"transactions"`
+	Type       string                `json:"type"`
+	Blockchain blockchain.Blockchain `json:"blockchain"`
 }
 
 type BlockMessage struct {
