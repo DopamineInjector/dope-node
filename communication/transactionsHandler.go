@@ -11,6 +11,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const MAX_TRANSACTIONS_PER_BLOCK = 5
+
 func handleTransfer(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 		var input struct {
@@ -61,7 +63,8 @@ func beginTransaction(sender string, amount int, receiver string) {
 		log.Info("cannot send $ to yourself")
 		return
 	}
-	blockchain.DopeTransactions.SaveTransaction(&transToSend)
+	blockchain.DopeTransactables.InsertTransactable(transToSend)
+	blockchain.TransactionsNumber += 1
 
 	transMess := messages.TransactionRequest{Type: "transaction", Amount: amount, Receiver: receiver, Sender: sender}
 	serializedMess, err := json.Marshal(transMess)
@@ -72,4 +75,9 @@ func beginTransaction(sender string, amount int, receiver string) {
 
 	log.Infof("transaction from %s to %s inserted successfully", fullNodeAddress, sender)
 	sendWsMessageToAllNodes(serializedMess)
+
+	if blockchain.TransactionsNumber >= MAX_TRANSACTIONS_PER_BLOCK {
+		digBlock("bloczek")
+		blockchain.TransactionsNumber = 0
+	}
 }

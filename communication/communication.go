@@ -88,8 +88,8 @@ func StartConsoleListener() {
 		case "status":
 			fmt.Println("Blockchain: ")
 			blockchain.DopeChain.Print()
-			fmt.Println("Transactions: ")
-			blockchain.DopeTransactions.Print()
+			fmt.Println("Transactables: ")
+			blockchain.DopeTransactables.Print()
 		default:
 			log.Infof("Unknown command: %s\n", input)
 		}
@@ -111,19 +111,7 @@ func digBlock(content string) {
 	}
 
 	log.Infof("Block with %s content initialized", content)
-	resolveTransactions()
 	sendWsMessageToAllNodes(serializedMess)
-}
-
-func resolveTransactions() {
-	for _, tr := range blockchain.DopeTransactions {
-		err := blockchain.DopeTransactions.InsertTransaction(&tr, &dbUrl)
-		if err != nil {
-			log.Infof("cannot resolve transaction: %s", err)
-		}
-	}
-
-	blockchain.DopeTransactions = blockchain.DopeTransactions[:0]
 }
 
 func syncBlockchain() error {

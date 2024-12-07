@@ -64,7 +64,7 @@ func handleMessageType(messType string, mess []byte) {
 			}
 
 			parsedTrans := receivedMessage.ParseToTransaction()
-			b.DopeTransactions.SaveTransaction(&parsedTrans)
+			b.DopeTransactables.InsertTransactable(parsedTrans)
 		}
 	case SYNC_STRUCTURE_MESSAGE_TYPE:
 		{
@@ -76,7 +76,6 @@ func handleMessageType(messType string, mess []byte) {
 			}
 
 			b.SyncBlockchain(&receivedMessage.Blockchain)
-			b.SyncTransactions(&receivedMessage.Transactions)
 		}
 	case BLOCK_MESSAGE_TYPE:
 		{
@@ -88,7 +87,7 @@ func handleMessageType(messType string, mess []byte) {
 			}
 
 			b.DopeChain = append(b.DopeChain, receivedMessage.Block)
-			b.DopeTransactions = b.DopeTransactions[:0]
+			b.DopeTransactables = b.DopeTransactables[:0]
 		}
 	case STRUCTURE_SYNC_REQUEST_MESSAGE_TYPE:
 		{
@@ -99,7 +98,7 @@ func handleMessageType(messType string, mess []byte) {
 				break
 			}
 
-			mess := messages.StructureResponse{Type: SYNC_STRUCTURE_MESSAGE_TYPE, Blockchain: b.DopeChain, Transactions: b.DopeTransactions}
+			mess := messages.StructureResponse{Type: SYNC_STRUCTURE_MESSAGE_TYPE, Blockchain: b.DopeChain}
 			serializedMess, err := json.Marshal(mess)
 			if err != nil {
 				log.Warnf("Cannot serialize. Reason: %s", err)

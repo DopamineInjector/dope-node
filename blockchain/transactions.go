@@ -1,8 +1,11 @@
 package blockchain
 
 import (
+	"dope-node/config"
 	"dope-node/utils"
 	"fmt"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type Transaction struct {
@@ -12,58 +15,39 @@ type Transaction struct {
 	Amount   int
 }
 
-type Transactions []Transaction
-
-var DopeTransactions = Transactions{}
-
-func SyncTransactions(transactions *Transactions) {
-	DopeTransactions = *transactions
-}
-
-func (dTransactions *Transactions) InsertTransaction(transaction *Transaction, dbUrl *string) error {
-	if dbUrl == nil || *dbUrl == "" {
-		return fmt.Errorf("database URL not set")
-	}
-
-	senderBalance, err := utils.GetUserBalance(*dbUrl, transaction.Sender)
+// Implementation of transactable
+func (t Transaction) run() (*string, error) {
+	dbUrl := config.GetString(config.DbUrlKey)
+	senderBalance, err := utils.GetUserBalance(dbUrl, t.Sender)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	receiverBalance, err := utils.GetUserBalance(*dbUrl, transaction.Receiver)
+	receiverBalance, err := utils.GetUserBalance(dbUrl, t.Receiver)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	newReceiverBalance := receiverBalance + transaction.Amount
-	newSenderBalance := senderBalance - transaction.Amount
+	newReceiverBalance := receiverBalance + t.Amount
+	newSenderBalance := senderBalance - t.Amount
 	if newSenderBalance < 0 {
-		return fmt.Errorf("not enouth $")
+		log.Warn("Transaction: tried to send more money than should")
+		return nil, fmt.Errorf("not enough $")
 	}
 
-	_, err = utils.UpddateBalance(*dbUrl, transaction.Sender, newSenderBalance)
+	_, err = utils.UpddateBalance(dbUrl, t.Sender, newSenderBalance)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	_, err = utils.UpddateBalance(*dbUrl, transaction.Receiver, newReceiverBalance)
+	_, err = utils.UpddateBalance(dbUrl, t.Receiver, newReceiverBalance)
 	if err != nil {
-		return err
+		return nil, err
 	}
+	result := "ok"
 
-	return nil
+	return &result, nil
 }
 
-func (dTransactions *Transactions) SaveTransaction(transaction *Transaction) {
-	transaction.Id = string(len(*dTransactions))
-	*dTransactions = append(*dTransactions, *transaction)
-}
-
-func (trans *Transactions) Print() {
-	for _, t := range *trans {
-		fmt.Println(t)
-	}
-}
-
-func (t *Transaction) ToString() string {
-	return fmt.Sprintf("Transaction: {id: %s, sender: %s, receiver: %s, amount: %d}", t.Id, t.Sender, t.Receiver, t.Amount)
+func (trans Transaction) print() {
+	fmt.Printf("Transaction [Id: %s, Sender: %s, Receiver: %s, Amount: %d]", trans.Id, trans.Sender, trans.Receiver, trans.Amount)
 }

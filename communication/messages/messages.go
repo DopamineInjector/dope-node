@@ -31,9 +31,8 @@ type StructureRequest struct {
 }
 
 type StructureResponse struct {
-	Type         string                  `json:"type"`
-	Blockchain   blockchain.Blockchain   `json:"blockchain"`
-	Transactions blockchain.Transactions `json:"transactions"`
+	Type       string                `json:"type"`
+	Blockchain blockchain.Blockchain `json:"blockchain"`
 }
 
 type BlockMessage struct {
@@ -41,10 +40,30 @@ type BlockMessage struct {
 	Block blockchain.Block `json:"block"`
 }
 
+type SmartContractRequest struct {
+	Payload struct {
+		Sender     []byte `json:"sender"`
+		Contract   []byte `json:"contract"`
+		Entrypoint string `json:"entrypoint"`
+		Args       string `json:"args"`
+	} `json:"payload"`
+	Signature []byte `json:"signature"`
+	View      bool   `json:"view"`
+}
+
 func (req *TransactionRequest) ParseToTransaction() blockchain.Transaction {
 	return blockchain.Transaction{
 		Sender:   req.Sender,
 		Receiver: req.Receiver,
 		Amount:   req.Amount,
+	}
+}
+
+func (req *SmartContractRequest) ParseToSmartContract() blockchain.SmartContract {
+	return blockchain.SmartContract{
+		Sender:     req.Payload.Sender,
+		Contract:   req.Payload.Contract,
+		Entrypoint: req.Payload.Entrypoint,
+		Args:       req.Payload.Args,
 	}
 }
