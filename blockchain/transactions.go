@@ -43,8 +43,9 @@ func (t Transaction) run() (*string, error) {
 	if err != nil {
 		return nil, err
 	}
+	result := "ok"
 
-	return nil, nil
+	return &result, nil
 }
 
 func (trans Transaction) print() {
