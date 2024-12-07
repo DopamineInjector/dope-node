@@ -9,6 +9,7 @@ import (
 type Blockchain []Block
 type Transactables []Transactable
 
+var TransactionsNumber int32 = 0
 var DopeChain Blockchain
 var DopeTransactables Transactables
 

@@ -64,7 +64,7 @@ func handleMessageType(messType string, mess []byte) {
 			}
 
 			parsedTrans := receivedMessage.ParseToTransaction()
-			b.DopeTransactions.SaveTransaction(&parsedTrans)
+			b.DopeTransactables.InsertTransactable(parsedTrans)
 		}
 	case SYNC_STRUCTURE_MESSAGE_TYPE:
 		{
