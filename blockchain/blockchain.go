@@ -32,10 +32,14 @@ func (bchain *Blockchain) InsertToBlockchain(content *string) *Block {
 	executeTransactables()
 
 	*bchain = append(*bchain, *newBlock)
+	log.Infof("blockchain: ")
+	bchain.Print()
 	return newBlock
 }
 
 func (dTransactable *Transactables) InsertTransactable(t Transactable) {
+	log.Infof("Transactables: ")
+	DopeTransactables.Print()
 	*dTransactable = append(*dTransactable, t)
 }
 
