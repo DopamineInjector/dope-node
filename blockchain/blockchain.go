@@ -47,7 +47,7 @@ func (bchain *Blockchain) Print() {
 
 func (trans *Transactables) Print() {
 	for _, t := range *trans {
-		fmt.Println(t)
+		t.print()
 	}
 }
 
