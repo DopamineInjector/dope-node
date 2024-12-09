@@ -48,6 +48,10 @@ func handleSmartContract(w http.ResponseWriter, r *http.Request) {
 			blockchain.DopeTransactables.InsertTransactable(parsedSC)
 		}
 
+		if len(blockchain.DopeTransactables) >= MAX_TRANSACTIONS_PER_BLOCK {
+			digBlock("bloczek")
+		}
+
 		body, _ := json.Marshal(output)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)

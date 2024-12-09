@@ -64,7 +64,6 @@ func beginTransaction(sender string, amount int, receiver string) {
 		return
 	}
 	blockchain.DopeTransactables.InsertTransactable(transToSend)
-	blockchain.TransactionsNumber += 1
 
 	transMess := messages.TransactionRequest{Type: "transaction", Amount: amount, Receiver: receiver, Sender: sender}
 	serializedMess, err := json.Marshal(transMess)
@@ -76,8 +75,7 @@ func beginTransaction(sender string, amount int, receiver string) {
 	log.Infof("transaction from %s to %s inserted successfully", fullNodeAddress, sender)
 	sendWsMessageToAllNodes(serializedMess)
 
-	if blockchain.TransactionsNumber >= MAX_TRANSACTIONS_PER_BLOCK {
+	if len(blockchain.DopeTransactables) >= MAX_TRANSACTIONS_PER_BLOCK {
 		digBlock("bloczek")
-		blockchain.TransactionsNumber = 0
 	}
 }
