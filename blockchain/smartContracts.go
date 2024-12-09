@@ -3,6 +3,7 @@ package blockchain
 import (
 	"dope-node/config"
 	"dope-node/vm"
+	"encoding/base64"
 	"fmt"
 
 	log "github.com/sirupsen/logrus"
@@ -19,7 +20,8 @@ type SmartContract struct {
 
 func (t SmartContract) run() (*string, error) {
 	scPath := config.GetString(config.SCAddressKey)
-	out, err := vm.RunContract(&vm.RunContractOpts{BinaryPath: scPath, Entrypoint: t.Entrypoint, Args: t.Args, Sender: string(t.Sender), TransactionId: "rand", BlockNumber: "(ro)blok"})
+	senderStr := base64.StdEncoding.EncodeToString(t.Sender)
+	out, err := vm.RunContract(&vm.RunContractOpts{BinaryPath: scPath, Entrypoint: t.Entrypoint, Args: t.Args, Sender: senderStr, TransactionId: "rand", BlockNumber: "(ro)blok"})
 	if err != nil {
 		log.Warnf("error while running VM: %s", err.Error())
 		return &out, err
