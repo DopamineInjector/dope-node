@@ -31,5 +31,6 @@ func (t SmartContract) run() (*string, error) {
 }
 
 func (t SmartContract) print() {
-	fmt.Printf("SC [Sender: %s, Entrypoint: %s]", t.Sender, t.Entrypoint)
+	senderStr := base64.StdEncoding.EncodeToString(t.Sender)
+	fmt.Printf("SC [Sender: %s, Entrypoint: %s]", senderStr, t.Entrypoint)
 }
