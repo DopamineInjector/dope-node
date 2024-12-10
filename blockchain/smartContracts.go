@@ -21,7 +21,7 @@ type SmartContract struct {
 func (t SmartContract) run() (*string, error) {
 	scPath := config.GetString(config.SCAddressKey)
 	senderStr := base64.StdEncoding.EncodeToString(t.Sender)
-	out, err := vm.RunContract(&vm.RunContractOpts{BinaryPath: scPath, Entrypoint: t.Entrypoint, Args: t.Args, Sender: senderStr, TransactionId: "rand", BlockNumber: "2137"})
+	out, err := vm.RunContract(&vm.RunContractOpts{BinaryPath: scPath, Entrypoint: t.Entrypoint, Args: t.Args, Sender: senderStr, TransactionId: "dopenft", BlockNumber: "2137"})
 	if err != nil {
 		log.Warnf("error while running VM: %s", err.Error())
 		return &out, err

@@ -31,7 +31,7 @@ func handleSmartContract(w http.ResponseWriter, r *http.Request) {
 		if input.View {
 			stringSender := base64.StdEncoding.EncodeToString(input.Payload.Sender)
 			scPath := config.GetString(config.SCAddressKey)
-			out, err := vm.RunContract(&vm.RunContractOpts{BinaryPath: scPath, Entrypoint: input.Payload.Entrypoint, Args: input.Payload.Args, Sender: stringSender, TransactionId: "random", BlockNumber: "2137"})
+			out, err := vm.RunContract(&vm.RunContractOpts{BinaryPath: scPath, Entrypoint: input.Payload.Entrypoint, Args: input.Payload.Args, Sender: stringSender, TransactionId: "dopenft", BlockNumber: "2137"})
 
 			if err != nil {
 				log.Warnf("error while running VM: %s", err)
